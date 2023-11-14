@@ -14,10 +14,23 @@ Good practice to import the module is to use the following code snippet:
 import os
 import sys
 
-# This will add the path to utils folder for a file placed in any subfolder of the project directory
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)) + '/utils')
+# This will add the project root path for a file placed in any subfolder of the project directory
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-import ann_lib as ann
+import utils.ann_lib as ann
 ```
 
 Change the path insert if creating a file in a sub-folder within a sub-folder of the project.
+
+## Classes binded
+
+- Neuron
+- Synapse
+- PostProcessing
+- ANN
+- PCPG
+- SO2CPG
+- ExtendedSO2CPG
+- AdaptiveSO2CPGSynPlas
+- RBFN
+- CPG-RBFN

@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
+
 import os
 import sys
 
-# Add utils path
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)) + '/utils')
+# Add project root to the python path
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from ann_lib import AdaptiveSO2CPGSynPlas, Neuron
+from utils.ann_lib import AdaptiveSO2CPGSynPlas, Neuron
 
 # ann = ANN(5)
 
