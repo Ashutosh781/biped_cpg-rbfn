@@ -1,5 +1,7 @@
 // pywrap.cpp
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <vector>
 #include "ann-framework/ann.h"
 #include "ann-framework/backpropagation.h"
 #include "ann-framework/circann.h"
@@ -10,6 +12,7 @@
 #include "ann-library/pcpg.h"
 #include "ann-library/extendedso2cpg.h"
 #include "ann-library/adaptiveso2cpgsynplas.h"
+#include "controllers/postProcessing.h"
 #include "controllers/rbfn.h"
 #include "controllers/cpg_rbfn.h"
 
@@ -18,7 +21,7 @@ namespace py = pybind11;
 PYBIND11_MODULE(ann_lib, m) {
 
     py::class_<Neuron>(m, "Neuron")
-    .def(py::init<>())
+    .def(py::init<>())  
     .def("addSynapseIn", &Neuron::addSynapseIn)
     .def("addSynapseOut", &Neuron::addSynapseOut)
     .def("getActivity", &Neuron::getActivity)
@@ -46,7 +49,7 @@ PYBIND11_MODULE(ann_lib, m) {
     ;
 
     py::class_<Synapse>(m, "Synapse")
-    .def(py::init<Neuron * const, Neuron * const, const bool &>())
+    .def(py::init<Neuron * const, Neuron * const, const bool &>())  
     .def("getDeltaWeight", &Synapse::getDeltaWeight)
     .def("getPost", &Synapse::getPost)
     .def("getPre", &Synapse::getPre)
@@ -57,7 +60,8 @@ PYBIND11_MODULE(ann_lib, m) {
     ;
 
     py::class_<ANN>(m, "ANN")
-    .def(py::init<int>())
+    .def(py::init<>())  
+    .def(py::init<int>()) 
     .def("backpropagationStep", &ANN::backpropagationStep)
     .def("dumpBiases", &ANN::dumpBiases)
     .def("dumpWeights", &ANN::dumpWeights)
@@ -143,7 +147,7 @@ PYBIND11_MODULE(ann_lib, m) {
     .def("addNeuron", &ANN::addNeuron)
     .def("addSubnet", &ANN::addSubnet)
     .def("addSynapse", &ANN::addSynapse)
-
+    
     .def("b", py::overload_cast<const int, const double &>(&ANN::b))
     .def("b", py::overload_cast<Neuron *, const double &>(&ANN::b))
     .def("b", py::overload_cast<const int>(&ANN::b))
@@ -153,12 +157,12 @@ PYBIND11_MODULE(ann_lib, m) {
     ;
 
     py::class_<PCPG, ANN>(m, "PCPG")
-    .def(py::init<>())
+    .def(py::init<>())  
     .def("updateOutputs", &PCPG::updateOutputs)
     ;
 
     py::class_<SO2CPG, ANN>(m, "SO2CPG")
-    .def(py::init<>())
+    .def(py::init<>())  
     .def("enableFrequencyTable", &SO2CPG::enableFrequencyTable)
     .def("getAlpha", &SO2CPG::getAlpha)
     .def("getFrequency", &SO2CPG::getFrequency)
@@ -173,7 +177,7 @@ PYBIND11_MODULE(ann_lib, m) {
     ;
 
     py::class_<ExtendedSO2CPG, SO2CPG>(m, "ExtendedSO2CPG")
-    .def(py::init<Neuron *>())
+    .def(py::init<Neuron *>(), py::arg("perturbingNeuron") = 0)  
     .def("allowResets", &ExtendedSO2CPG::allowResets)
     .def("getBeta", &ExtendedSO2CPG::getBeta)
     .def("getEpsilon", &ExtendedSO2CPG::getEpsilon)
@@ -192,7 +196,7 @@ PYBIND11_MODULE(ann_lib, m) {
     ;
 
     py::class_<AdaptiveSO2CPGSynPlas, ExtendedSO2CPG>(m, "AdaptiveSO2CPGSynPlas")
-    .def(py::init<Neuron *>())
+    .def(py::init<Neuron *>(), py::arg("perturbingNeuron") = 0)  
     .def("updateWeights", &AdaptiveSO2CPGSynPlas::updateWeights)
     .def("setBetaDynamics", &AdaptiveSO2CPGSynPlas::setBetaDynamics)
     .def("setGammaDynamics", &AdaptiveSO2CPGSynPlas::setGammaDynamics)
@@ -200,7 +204,7 @@ PYBIND11_MODULE(ann_lib, m) {
     ;
 
     py::class_<rbfn>(m, "rbfn")
-    .def(py::init<int, vector<vector<float>>, string, string, vector<vector<float>>>())
+    .def(py::init<int, vector<vector<float>>, string, string, vector<vector<float>>>())  
     .def("getNumKernels", &rbfn::getNumKernels)
     .def("setCPGPeriod", &rbfn::setCPGPeriod)
     .def("setBeta", &rbfn::setBeta)
@@ -214,8 +218,23 @@ PYBIND11_MODULE(ann_lib, m) {
     .def("calculateCenters", &rbfn::calculateCenters)
     ;
 
+    py::class_<postProcessing>(m, "postProcessing")
+    .def(py::init<>())  
+    .def("getLPFSignal", &postProcessing::getLPFSignal)
+    .def("getAmplitudeSignal", &postProcessing::getAmplitudeSignal)
+    .def("calculateAmplitudeSignal", &postProcessing::calculateAmplitudeSignal)
+    .def("calculateLPFSignal", &postProcessing::calculateLPFSignal)
+    .def("calculateLPFAmplitude", &postProcessing::calculateLPFAmplitude)
+    .def("calculateAmplitude", &postProcessing::calculateAmplitude)
+    .def("getTimeBetweenZeroDerivative", &postProcessing::getTimeBetweenZeroDerivative)
+    .def("getPeriod", &postProcessing::getPeriod)
+    .def("getSignalPeriod", &postProcessing::getSignalPeriod)
+    .def_readwrite("periodViz", &postProcessing::periodViz)
+    .def_readwrite("periodTrust", &postProcessing::periodTrust)
+    ;
+
     py::class_<cpg_rbfn>(m, "cpg_rbfn")
-    .def(py::init<vector<vector<float>>, string, int, string, vector<vector<float>>>())
+    .def(py::init<vector<vector<float>>, string, int, string, vector<vector<float>>>())  
     .def("setCPGPeriod", &cpg_rbfn::setCPGPeriod)
     .def("step", &cpg_rbfn::step)
     .def("getCpgOutput", &cpg_rbfn::getCpgOutput)
