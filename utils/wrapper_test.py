@@ -1,5 +1,9 @@
+import os
 import sys
-sys.path.append("/home/magraz/cpg_code/library/build")
+
+# Add utils path
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)) + '/utils')
+
 from ann_lib import AdaptiveSO2CPGSynPlas, Neuron
 
 # ann = ANN(5)
