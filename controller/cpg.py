@@ -19,3 +19,15 @@ class CPG(nn.Module):
         self.activations[0] = next_a1
         self.activations[1] = next_a2
         return self.activations
+
+# TEST CPG
+# cpg = CPG()
+# x=[]
+# y=[]
+# for _ in range(360):
+#     out=cpg.get_output()
+#     x.append(out[0])
+#     y.append(out[1])
+# plt.plot(x)
+# plt.plot(y)
+# plt.show()

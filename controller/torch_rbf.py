@@ -45,7 +45,7 @@ class RBF(nn.Module):
         size = (self.out_features, self.in_features)
         x = input.expand(size)
         c = self.centres.expand(size)
-        distances = (x - c).pow(2).sum(-1).pow(0.5) / torch.exp(self.log_sigmas).unsqueeze(0)
+        distances = (x - c).pow(2).sum(-1).pow(0.5) / torch.exp(self.log_sigmas)
         return self.basis_func(distances)
 
 

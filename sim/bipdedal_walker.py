@@ -3,15 +3,16 @@ import sys
 import random as rand
 import gym
 import numpy as np
-from torch import nn, tanh, relu, tensor, float32, zeros, cat, save, from_numpy, flatten, load
+from torch import save, load
 import matplotlib.pyplot as plt
 from pathlib import Path
 
 # Add project root to the python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-import controller.torch_rbf as rbf
-from controller.cpg import CPG
+from evolutionary.classes import Individual
+from evolutionary.functions import mutate, norm_fitness_of_generation, roulette_wheel_selection, select_solutions_from_gen, resetFitness
+from controller.cpg_rbfn import CPG_RBFN
 
 #Get current directory
 CWD = Path.cwd()
@@ -26,129 +27,6 @@ env = gym.make(ENV_TYPE)
 
 ##########-- NEUROEVOLUTION --##########
 
-class Network(nn.Module):
-  def __init__(self, in_size, hid1_size, hid2_size, out_size):
-    super(Network, self).__init__()
-    self.in_size = in_size
-    self.hid1_size = hid1_size
-    self.hid2_size = hid2_size
-    self.out_size = out_size
-
-    self.hid1 = nn.Linear(self.in_size, self.hid1_size)
-    self.hid2 = nn.Linear(self.hid1_size, self.hid2_size)
-    self.out = nn.Linear(self.hid2_size, self.out_size)
-
-    self.dim = (self.in_size * self.hid1_size  * self.hid2_size * self.out_size) + (self.hid1_size  + self.hid2_size + self.out_size)
-    self.params = zeros(self.dim)
-
-    #Initialize weights and biases
-    nn.init.xavier_uniform_(self.hid1.weight)
-    nn.init.zeros_(self.hid1.bias)
-    nn.init.xavier_uniform_(self.hid2.weight)
-    nn.init.zeros_(self.hid2.bias)
-    nn.init.xavier_uniform_(self.out.weight)
-    nn.init.zeros_(self.out.bias)
-
-
-  def forward(self, x):
-    z = relu(self.hid1(x))
-    z = relu(self.hid2(z))
-    z = tanh(self.out(z))
-    return z
-
-  def get_params(self):
-    hid1_weights = nn.utils.parameters_to_vector(self.hid1.weight)
-    hid1_bias = nn.utils.parameters_to_vector(self.hid1.bias)
-    hid2_weights = nn.utils.parameters_to_vector(self.hid2.weight)
-    hid2_bias = nn.utils.parameters_to_vector(self.hid2.bias)
-    out_weights = nn.utils.parameters_to_vector(self.out.weight)
-    out_bias = nn.utils.parameters_to_vector(self.out.bias)
-    return cat((hid1_weights, hid1_bias, hid2_weights, hid2_bias, out_weights, out_bias), dim=0)
-
-  def set_params(self, params):
-    in_to_hid1 =self.in_size * self.hid1_size
-    in_to_hid1_bias = in_to_hid1 + self.hid1_size
-
-    hid1_to_hid2 = self.hid1_size * self.hid2_size
-    hid1_to_hid2_bias = hid1_to_hid2 + self.hid2_size
-
-    hid2_to_out = self.hid2_size * self.out_size
-    hid2_to_out_bias = hid2_to_out + self.out_size
-
-    self.hid1.weight.data = params[0 : in_to_hid1].reshape((self.hid1_size, self.in_size))
-    self.hid1.bias.data = params[in_to_hid1 : in_to_hid1_bias]
-
-    self.hid2.weight.data = params[in_to_hid1_bias : in_to_hid1_bias + hid1_to_hid2].reshape((self.hid2_size, self.hid1_size))
-    self.hid2.bias.data = params[in_to_hid1_bias + hid1_to_hid2 : in_to_hid1_bias + hid1_to_hid2_bias]
-
-    self.out.weight.data = params[in_to_hid1_bias + hid1_to_hid2_bias : in_to_hid1_bias + hid1_to_hid2_bias + hid2_to_out].reshape((self.out_size, self.hid2_size))
-    self.out.bias.data = params[in_to_hid1_bias + hid1_to_hid2_bias + hid2_to_out : in_to_hid1_bias + hid1_to_hid2_bias + hid2_to_out_bias]
-
-class CPG_RBFN(nn.Module):
-  def __init__(self, rbf_size, out_size):
-    super(CPG_RBFN, self).__init__()
-    self.in_size = 2
-    self.rbf_kernels = rbf_size
-    self.out_size = out_size
-
-    self.cpg = CPG()
-    self.rbfn = rbf.RBF(self.in_size, self.rbf_kernels, rbf.gaussian)
-
-    self.out = nn.Linear(self.rbf_kernels, self.out_size)
-
-    self.dim = ((2 * self.rbf_kernels) + (self.rbf_kernels * self.out_size)) + (self.rbf_kernels + self.out_size)
-    self.params = zeros(self.dim)
-
-    #Initialize weights and biases
-    nn.init.xavier_uniform_(self.out.weight)
-    nn.init.zeros_(self.out.bias)
-
-  def forward(self):
-    z = from_numpy(self.cpg.get_output()).float()
-    z = self.rbfn(z)
-    z = tanh(self.out(z))
-    return z
-
-  def get_params(self):
-    flatten_centers = flatten(self.rbfn.centres, start_dim=0)
-    rbf_centers = nn.utils.parameters_to_vector(flatten_centers)
-    rbf_log_sigmas = nn.utils.parameters_to_vector(self.rbfn.log_sigmas)
-    out_weights = nn.utils.parameters_to_vector(self.out.weight)
-    out_bias = nn.utils.parameters_to_vector(self.out.bias)
-    return cat((rbf_centers, rbf_log_sigmas, out_weights, out_bias), dim=0)
-
-  def set_params(self, params):
-    in_to_rbf = self.in_size * self.rbf_kernels
-    rbf_to_out = self.out_size * self.rbf_kernels
-
-    self.rbfn.centres.data = params[0 : in_to_rbf].reshape((self.rbf_kernels, self.in_size))
-    self.rbfn.log_sigmas.data = params[in_to_rbf : in_to_rbf + self.rbf_kernels]
-
-    self.out.weight.data = params[in_to_rbf + self.rbf_kernels : in_to_rbf + self.rbf_kernels + rbf_to_out].reshape((self.out_size, self.rbf_kernels))
-    self.out.bias.data = params[in_to_rbf + self.rbf_kernels + rbf_to_out : in_to_rbf + self.rbf_kernels + rbf_to_out + self.out_size]
-
-class Individual():
-    def __init__(self):
-        # self.in_size = 24
-        # self.hid1_size = 40
-        # self.hid2_size = 40
-        # self.out_size = 4
-
-        # self.model   = Network(self.in_size, self.hid1_size, self.hid2_size, self.out_size)
-
-        self.rbf_size = 40
-        self.out_size = 4
-
-        self.model   = CPG_RBFN(self.rbf_size, self.out_size)
-
-        self.fitness = 0 #Total fitness the model gets in a game
-
-    def choose_action(self, x):
-        #output = self.model.forward(x)
-        output = self.model.forward()
-        return output.detach().numpy()[0]
-        #return np.argmax(output.detach().numpy())
-
 #Run individuals in generation through environment
 def run_gen(generation, rewards_goal, min_equal_steps):
     equal_steps = 0
@@ -162,9 +40,7 @@ def run_gen(generation, rewards_goal, min_equal_steps):
         for _ in range(rewards_goal):
 
             #Choose action
-            x = np.array(state, dtype=np.float32)
-            x = tensor(x, dtype=float32)
-            action = individual.choose_action(x)
+            action = individual.choose_action()
 
             next_state, reward, terminated, _, _ = env.step(action)
 
@@ -183,62 +59,20 @@ def run_gen(generation, rewards_goal, min_equal_steps):
             if terminated:
                 break
 
-#Normalize the fitness of a generation
-def norm_fitness_of_generation(generation):
-    cost_of_generation = [individual.fitness for individual in generation]
-    sum_of_generation_cost = sum(cost_of_generation)
-    fitness_of_generation = [individual_cost/sum_of_generation_cost for individual_cost in cost_of_generation]
-    return fitness_of_generation
-
-#Returns the index of the selected parent through roulette wheel selection
-def roulette_wheel_selection(fitness_of_generation):
-    selected_fitness = rand.uniform(0,1)
-    curr_fitness_sum = 0
-    selected_idx = 0
-    for idx, fitness in enumerate(fitness_of_generation):
-        curr_fitness_sum += fitness
-        if curr_fitness_sum > selected_fitness:
-            selected_idx = idx
-            break
-
-    return selected_idx
-
-def mutate(params, mutations = 1):
-    for _ in range(mutations):
-        params[rand.randrange(len(params))] += np.random.normal(0, 0.01)
-    return params
-
-#Select up to beam width best solutions from pool
-def select_solutions_from_gen(generation, gen_size):
-
-    #Store index and cost of each solution from input solution pool
-    cost_solution_pool = [(idx, individual.fitness) for idx, individual in enumerate(generation)]
-
-    #Sort solution pool by the cost
-    cost_solution_pool.sort(key=lambda tup: tup[1], reverse=True)
-
-    #Store the best solutions up to beam width
-    selected_individuals = []
-    for i in range(0, gen_size):
-        selected_individuals.append(generation[cost_solution_pool[i][0]])
-
-    return selected_individuals
-
-#Resets the fitness and steps an Agent has for every new generation
-def resetFitness(generation):
-    for i in generation:
-        i.fitness = 0
-
 #Train through neuro evolution
-def neuro_evolution(gen_size=5, generations=10, rewards_goal=1000, min_equal_steps=10):
+def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, min_equal_steps: int, elite_size: int, elite: list[Individual]=[]):
 
     best_per_gen = []
     best_indv = Individual()
-
+    
     #Initialize first gen
     generation = []
     try:
-        for _ in range(gen_size):
+        # Add elite if any
+        for i in range(len(elite)):
+            generation.append(elite[i])
+
+        for _ in range(gen_size-len(elite)):
             new_individual = Individual()
             generation.append(new_individual)
 
@@ -281,23 +115,23 @@ def neuro_evolution(gen_size=5, generations=10, rewards_goal=1000, min_equal_ste
 
             best_per_gen.append(generation[0].fitness)
             best_indv = generation[0]
-            best_20_indv = generation[0:20]
+            elite = generation[0:elite_size]
 
             #Reset generation's fitness
             resetFitness(generation)
         
     except KeyboardInterrupt:
-        for i in range(len(best_20_indv)):
-            save(best_20_indv[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
+        for i in range(len(elite)):
+            save(elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
         print("Saved Models")
         sys.exit()
 
     env.close()
 
-    return best_indv, best_20_indv, best_per_gen
+    return best_indv, elite, best_per_gen
  
 #Run the algorithms with learned models
-def test_algorithm(best_nn=None, episodes=1000):
+def test_algorithm(best_nn:Individual, episodes:int=1000):
     #Set test environment
     test_env = gym.make(ENV_TYPE, render_mode="human")
 
@@ -309,11 +143,7 @@ def test_algorithm(best_nn=None, episodes=1000):
     for _ in range(episodes):
 
         #Choose action
-        action = test_env.action_space.sample()
-
-        x = np.array(state, dtype=np.float32)
-        x = tensor(x, dtype=float32)
-        action = best_nn.choose_action(x)
+        action = best_nn.choose_action()
 
         state, reward, terminated, _, _ = test_env.step(action)
 
@@ -327,27 +157,35 @@ def test_algorithm(best_nn=None, episodes=1000):
 
     test_env.close()
 
-# RUN NEUROEVOLUTION
-best_indv, best_20_indv, best_per_gen = neuro_evolution(gen_size=20, generations=100, rewards_goal=1000, min_equal_steps = 10)
-for i in range(len(best_20_indv)):
-            save(best_20_indv[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
-test_algorithm(best_nn=best_indv)
+### NEUROEVOLUTION PARAMS ###
+elite_size = 20
+min_equal_steps = 5
+rewards_goal = 500
+generations = 200
+gen_size = 40
 
-# LOAD SAVED MODEL
-# model = CPG_RBFN(40, 4)
+### FIRST NEUROEVOLUTION RUN ###
+# best_indv, elite, best_per_gen = neuro_evolution(gen_size=gen_size, generations=generations, rewards_goal=rewards_goal, min_equal_steps = min_equal_steps, elite_size=elite_size)
+# for i in range(len(elite)):
+#             save(elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
+
+### CONTINUE NEUROEVOLUTION RUN ###
+# Load elite
+elite = []
+for i in range(elite_size):
+    model = CPG_RBFN(20, 4)
+    model.load_state_dict(load(f"{MODELS_PATH}/model{i}.pth"))
+    best_indv = Individual()
+    best_indv.model = model
+    elite.append(best_indv)
+
+best_indv, new_elite, best_per_gen = neuro_evolution(gen_size=gen_size, generations=generations, rewards_goal=rewards_goal, min_equal_steps = min_equal_steps, elite_size=elite_size, elite=elite)
+for i in range(len(new_elite)):
+            save(new_elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
+
+### LOAD BEST SAVED MODEL ###
+# model = CPG_RBFN(20, 4)
 # model.load_state_dict(load(f"{MODELS_PATH}/model0.pth"))
 # best_indv = Individual()
 # best_indv.model = model
 # test_algorithm(best_nn=best_indv)
-
-# TEST CPG
-# cpg = CPG()
-# x=[]
-# y=[]
-# for _ in range(360):
-#     out=cpg.get_output()
-#     x.append(out[0])
-#     y.append(out[1])
-# plt.plot(x)
-# plt.plot(y)
-# plt.show()
