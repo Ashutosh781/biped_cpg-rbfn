@@ -5,12 +5,19 @@ import gym
 import numpy as np
 from torch import nn, tanh, relu, tensor, float32, zeros, cat, save, from_numpy, flatten, load
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 # Add project root to the python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 import controller.torch_rbf as rbf
 from controller.cpg import CPG
+
+#Get current directory
+CWD = Path.cwd()
+
+#Folder to save models
+MODELS_PATH = f"{CWD}/models"
 
 #ENV_TYPE = 'MountainCar-v0'
 ENV_TYPE = "BipedalWalker-v3"
@@ -260,7 +267,7 @@ def neuro_evolution(gen_size=5, generations=10, rewards_goal=1000, min_equal_ste
 
                 children.append(child)
 
-            #Runs each child through the cart pole sim
+            #Runs each child through the biped walker sim
             run_gen(children, rewards_goal, min_equal_steps)
 
             #Add the breeded children to current generation
@@ -281,7 +288,7 @@ def neuro_evolution(gen_size=5, generations=10, rewards_goal=1000, min_equal_ste
         
     except KeyboardInterrupt:
         for i in range(len(best_20_indv)):
-            save(best_20_indv[i].model.state_dict(), f"/home/magraz/biped_cpg-rbfn/sim/model{i}.pth")
+            save(best_20_indv[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
         print("Saved Models")
         sys.exit()
 
@@ -321,14 +328,14 @@ def test_algorithm(best_nn=None, episodes=1000):
     test_env.close()
 
 # RUN NEUROEVOLUTION
-best_indv, best_20_indv, best_per_gen = neuro_evolution(gen_size=125, generations=1000, rewards_goal=1000, min_equal_steps = 10)
+best_indv, best_20_indv, best_per_gen = neuro_evolution(gen_size=20, generations=100, rewards_goal=1000, min_equal_steps = 10)
 for i in range(len(best_20_indv)):
-            save(best_20_indv[i].model.state_dict(), f"/home/magraz/biped_cpg-rbfn/sim/model{i}.pth")
+            save(best_20_indv[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
 test_algorithm(best_nn=best_indv)
 
 # LOAD SAVED MODEL
 # model = CPG_RBFN(40, 4)
-# model.load_state_dict(load("/home/magraz/biped_cpg-rbfn/sim/model.pth"))
+# model.load_state_dict(load(f"{MODELS_PATH}/model0.pth"))
 # best_indv = Individual()
 # best_indv.model = model
 # test_algorithm(best_nn=best_indv)
