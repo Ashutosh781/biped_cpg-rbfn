@@ -15,6 +15,7 @@
 #include "controllers/postProcessing.h"
 #include "controllers/rbfn.h"
 #include "controllers/cpg_rbfn.h"
+#include "delayline.h"
 
 namespace py = pybind11;
 
@@ -196,7 +197,7 @@ PYBIND11_MODULE(ann_lib, m) {
     ;
 
     py::class_<AdaptiveSO2CPGSynPlas, ExtendedSO2CPG>(m, "AdaptiveSO2CPGSynPlas")
-    .def(py::init<Neuron *>(), py::arg("perturbingNeuron") = 0)  
+    .def(py::init<>())  
     .def("updateWeights", &AdaptiveSO2CPGSynPlas::updateWeights)
     .def("setBetaDynamics", &AdaptiveSO2CPGSynPlas::setBetaDynamics)
     .def("setGammaDynamics", &AdaptiveSO2CPGSynPlas::setGammaDynamics)
@@ -251,5 +252,16 @@ PYBIND11_MODULE(ann_lib, m) {
     .def("calculateRBFCenters", &cpg_rbfn::calculateRBFCenters)
     .def("getNetworkOutput", &cpg_rbfn::getNetworkOutput)
     .def("getContribution", &cpg_rbfn::getContribution)
+    ;
+
+    py::class_<Delayline>(m, "Delayline")
+    .def(py::init<int>())  
+    .def("Read", &Delayline::Read)
+    .def("Write", &Delayline::Write)
+    .def("Step", &Delayline::Step)
+    .def("Reset", &Delayline::Reset)
+    .def_static("mod", &Delayline::mod)
+    .def_readwrite("buffer", &Delayline::buffer)
+    .def_readwrite("step", &Delayline::step)
     ;
 }

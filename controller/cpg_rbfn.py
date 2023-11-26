@@ -7,7 +7,8 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from utils.ann_lib import postProcessing
 from controller.cpg import CPG
-from controller.torch_rbf import RBF
+from controller.rbf_layer import RBF
+from controller.motor_layer import MotorLayer
 
 class CPG_RBFN(nn.Module):
   def __init__(self, rbf_size, out_size):
@@ -31,14 +32,14 @@ class CPG_RBFN(nn.Module):
     
     self.rbfn = RBF(self.in_size, self.rbf_kernels, cpg_period)
 
-    self.out = nn.Linear(self.rbf_kernels, self.out_size)
+    self.out = MotorLayer(self.rbf_kernels, self.out_size)
 
-    self.dim = ((2 * self.rbf_kernels) + (self.rbf_kernels * self.out_size)) + self.out_size
+    self.dim = ((2 * self.rbf_kernels) + (self.rbf_kernels * self.out_size))
     self.params = zeros(self.dim)
 
     #Initialize weights and biases
-    nn.init.xavier_uniform_(self.out.weight)
-    nn.init.zeros_(self.out.bias)
+    # nn.init.xavier_uniform_(self.out.weight)
+    # nn.init.zeros_(self.out.bias)
   
   def set_rbf_cpg_period(self):
     cpg_output = self.cpg.get_output()
@@ -57,8 +58,13 @@ class CPG_RBFN(nn.Module):
     flatten_centers = flatten(self.rbfn.centres, start_dim=0)
     rbf_centers = nn.utils.parameters_to_vector(flatten_centers)
     out_weights = nn.utils.parameters_to_vector(self.out.weight)
-    out_bias = nn.utils.parameters_to_vector(self.out.bias)
-    return cat((rbf_centers, out_weights, out_bias), dim=0)
+    # out_bias = nn.utils.parameters_to_vector(self.out.bias)
+    # return cat((rbf_centers, out_weights, out_bias), dim=0)
+    return cat((rbf_centers, out_weights), dim=0)
+
+    # out_weights = nn.utils.parameters_to_vector(self.out.weight)
+    # out_bias = nn.utils.parameters_to_vector(self.out.bias)
+    # return cat((out_weights, out_bias), dim=0)
 
   def set_params(self, params):
     in_to_rbf = self.in_size * self.rbf_kernels
@@ -67,4 +73,7 @@ class CPG_RBFN(nn.Module):
     self.rbfn.centres.data = params[0 : in_to_rbf].reshape((self.rbf_kernels, self.in_size))
 
     self.out.weight.data = params[in_to_rbf : in_to_rbf + rbf_to_out].reshape((self.out_size, self.rbf_kernels))
-    self.out.bias.data = params[in_to_rbf + rbf_to_out : in_to_rbf + rbf_to_out + self.out_size]
+    #self.out.bias.data = params[in_to_rbf + rbf_to_out : in_to_rbf + rbf_to_out + self.out_size]
+
+    # self.out.weight.data = params[0 : rbf_to_out].reshape((self.out_size, self.rbf_kernels))
+    # self.out.bias.data = params[rbf_to_out : rbf_to_out + self.out_size]

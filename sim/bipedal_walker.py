@@ -57,6 +57,8 @@ def run_gen(generation, rewards_goal, min_equal_steps):
                 equal_steps += 1
             else:
                 equal_steps = 0
+            
+            state = next_state
 
             if (equal_steps>=min_equal_steps):
                 individual.fitness -= 50
@@ -137,7 +139,7 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, min_equa
     return best_indv, elite, best_per_gen
  
 #Run the algorithms with learned models
-def test_algorithm(best_nn:Individual, episodes:int=1000):
+def test_algorithm(best_nn:Individual, episodes:int=1000, min_equal_steps:int=5):
     #Set test environment
     test_env = gym.make(ENV_TYPE, render_mode="human")
 
@@ -150,15 +152,27 @@ def test_algorithm(best_nn:Individual, episodes:int=1000):
 
         #Choose action
         action = best_nn.choose_action()
+        print(action)
 
-        state, reward, terminated, _, _ = test_env.step(action)
+        next_state, reward, terminated, _, _ = test_env.step(action)
 
         total_rewards += reward
+
+        if np.allclose(state, next_state):
+                equal_steps += 1
+        else:
+            equal_steps = 0
+        
+        state = next_state
+
+        if (equal_steps>=min_equal_steps):
+            total_rewards -= 50
+
+        print(f"Rewards: {total_rewards}")
 
         if terminated:
             break
 
-        print(f"Rewards: {total_rewards}")
         test_env.render()
 
     test_env.close()
@@ -167,8 +181,8 @@ def test_algorithm(best_nn:Individual, episodes:int=1000):
 elite_size = 20
 min_equal_steps = 5
 rewards_goal = 500
-generations = 200
-gen_size = 40
+generations = 100
+gen_size = 20
 
 ### FIRST NEUROEVOLUTION RUN ###
 # best_indv, elite, best_per_gen = neuro_evolution(gen_size=gen_size, generations=generations, rewards_goal=rewards_goal, min_equal_steps = min_equal_steps, elite_size=elite_size)
@@ -187,9 +201,9 @@ for i in range(elite_size):
 
 best_indv, new_elite, best_per_gen = neuro_evolution(gen_size=gen_size, generations=generations, rewards_goal=rewards_goal, min_equal_steps = min_equal_steps, elite_size=elite_size, elite=elite)
 for i in range(len(new_elite)):
-            save(new_elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
+    save(new_elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
 
-### LOAD BEST SAVED MODEL ###
+## LOAD BEST SAVED MODEL ###
 # model = CPG_RBFN(RBFN_UNITS, OUTPUT_UNITS)
 # model.load_state_dict(load(f"{MODELS_PATH}/model0.pth"))
 # best_indv = Individual(RBFN_UNITS, OUTPUT_UNITS)

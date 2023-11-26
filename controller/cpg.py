@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 class CPG(nn.Module):
     def __init__(self):
         super(CPG, self).__init__()
-        self.alpha = 1.01
-        self.phi = 0.02*np.pi
+        self.alpha = 1.22
+        self.phi = 0.1*np.pi
         self.weights = np.array([[self.alpha * np.cos(self.phi), self.alpha * np.sin(self.phi)],[-self.alpha * np.sin(self.phi), self.alpha * np.cos(self.phi)]])
         self.activations = np.array((0, 0.2012))
 
