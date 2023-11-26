@@ -20,10 +20,16 @@ CWD = Path.cwd()
 #Folder to save models
 MODELS_PATH = f"{CWD}/models"
 
-#ENV_TYPE = 'MountainCar-v0'
+# ENV_TYPE = 'MountainCar-v0'
 ENV_TYPE = "BipedalWalker-v3"
+# ENV_TYPE = "Walker2d-v4"
 
-env = gym.make(ENV_TYPE)
+ENV = gym.make(ENV_TYPE)
+# ENV = gym.make(ENV_TYPE, healthy_reward=0.1, forward_reward_weight=2.0)
+
+#CPG-RBFN Parameters
+RBFN_UNITS = 20
+OUTPUT_UNITS = 4
 
 ##########-- NEUROEVOLUTION --##########
 
@@ -34,7 +40,7 @@ def run_gen(generation, rewards_goal, min_equal_steps):
     for individual in generation:
 
         #Reset the environment, get initial state
-        state, _ = env.reset()
+        state, _ = ENV.reset()
 
         #This is the goal you have set for the individual.
         for _ in range(rewards_goal):
@@ -42,7 +48,7 @@ def run_gen(generation, rewards_goal, min_equal_steps):
             #Choose action
             action = individual.choose_action()
 
-            next_state, reward, terminated, _, _ = env.step(action)
+            next_state, reward, terminated, _, _ = ENV.step(action)
 
             individual.fitness += reward
 
@@ -63,7 +69,7 @@ def run_gen(generation, rewards_goal, min_equal_steps):
 def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, min_equal_steps: int, elite_size: int, elite: list[Individual]=[]):
 
     best_per_gen = []
-    best_indv = Individual()
+    best_indv = Individual(RBFN_UNITS, OUTPUT_UNITS)
     
     #Initialize first gen
     generation = []
@@ -73,7 +79,7 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, min_equa
             generation.append(elite[i])
 
         for _ in range(gen_size-len(elite)):
-            new_individual = Individual()
+            new_individual = Individual(RBFN_UNITS, OUTPUT_UNITS)
             generation.append(new_individual)
 
         #Iterate generations
@@ -96,7 +102,7 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, min_equa
                 mutate_percent = 0.1
                 mutations = int(parent.model.dim * mutate_percent)
 
-                child = Individual()
+                child = Individual(RBFN_UNITS, OUTPUT_UNITS)
                 child.model.set_params(mutate(parent.model.get_params(), mutations))
 
                 children.append(child)
@@ -126,7 +132,7 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, min_equa
         print("Saved Models")
         sys.exit()
 
-    env.close()
+    ENV.close()
 
     return best_indv, elite, best_per_gen
  
@@ -173,9 +179,9 @@ gen_size = 40
 # Load elite
 elite = []
 for i in range(elite_size):
-    model = CPG_RBFN(20, 4)
+    model = CPG_RBFN(RBFN_UNITS, OUTPUT_UNITS)
     model.load_state_dict(load(f"{MODELS_PATH}/model{i}.pth"))
-    best_indv = Individual()
+    best_indv = Individual(RBFN_UNITS, OUTPUT_UNITS)
     best_indv.model = model
     elite.append(best_indv)
 
@@ -184,8 +190,8 @@ for i in range(len(new_elite)):
             save(new_elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
 
 ### LOAD BEST SAVED MODEL ###
-# model = CPG_RBFN(20, 4)
+# model = CPG_RBFN(RBFN_UNITS, OUTPUT_UNITS)
 # model.load_state_dict(load(f"{MODELS_PATH}/model0.pth"))
-# best_indv = Individual()
+# best_indv = Individual(RBFN_UNITS, OUTPUT_UNITS)
 # best_indv.model = model
 # test_algorithm(best_nn=best_indv)

@@ -1,8 +1,14 @@
 import torch
 import torch.nn as nn
+import numpy as np
+
+# Add project root to the python path
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from utils.ann_lib import Delayline
 
 # RBF Layer
-
 class RBF(nn.Module):
     """
     Transforms incoming data using a given radial basis function:
@@ -28,30 +34,41 @@ class RBF(nn.Module):
             distances.
     """
 
-    def __init__(self, in_features, out_features, basis_func):
+    def __init__(self, in_features, out_features, cpg_period):
         super(RBF, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.centres = nn.Parameter(torch.Tensor(out_features, in_features))
-        self.log_sigmas = nn.Parameter(torch.Tensor(out_features))
-        self.basis_func = basis_func
         self.reset_parameters()
+
+        self.beta = 0.04
+
+        self.tau = 300
+        self.delayline = [Delayline(self.tau), Delayline(self.tau)]
+        self.cpg_period = cpg_period
 
     def reset_parameters(self):
         nn.init.normal_(self.centres, 0, 1)
-        nn.init.constant_(self.log_sigmas, 0)
 
     def forward(self, input):
-        size = (self.out_features, self.in_features)
-        x = input.expand(size)
-        c = self.centres.expand(size)
-        distances = (x - c).pow(2).sum(-1).pow(0.5) / torch.exp(self.log_sigmas)
-        return self.basis_func(distances)
+        self.delayline[0].Write(input[0])
+        self.delayline[1].Write(input[1])
 
+        c = np.zeros((self.out_features, self.in_features))
 
+        for i in range(self.out_features):
+            c[i,0] = torch.exp(-(torch.pow(self.delayline[0].Read(0) - self.centres[i,0], 2) + torch.pow(self.delayline[1].Read(0) - self.centres[i,1], 2))/self.beta).detach().numpy()
+            c[i,1] = torch.exp(-(torch.pow(self.delayline[0].Read(int(self.cpg_period*0.5)) - self.centres[i,0], 2) + torch.pow(self.delayline[1].Read(int(self.cpg_period*0.5)) - self.centres[i,1], 2))/self.beta).detach().numpy()
+      
+        c = torch.from_numpy(c).float()
+        distances = (c).sum(-1)
+
+        for i in self.delayline:
+            i.Step()
+
+        return distances
 
 # RBFs
-
 def gaussian(alpha):
     phi = torch.exp(-1*alpha.pow(2))
     return phi

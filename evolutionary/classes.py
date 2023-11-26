@@ -1,10 +1,10 @@
 from controller.cpg_rbfn import CPG_RBFN
 
 class Individual():
-    def __init__(self):
+    def __init__(self, rbf_size, out_size):
 
-        self.rbf_size = 20
-        self.out_size = 4
+        self.rbf_size = rbf_size
+        self.out_size = out_size
 
         self.model = CPG_RBFN(self.rbf_size, self.out_size)
 
