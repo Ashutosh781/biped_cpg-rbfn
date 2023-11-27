@@ -10,6 +10,7 @@ from pathlib import Path
 # Add project root to the python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
+# Import proect modules
 from evolutionary.classes import Individual
 from evolutionary.functions import mutate, norm_fitness_of_generation, roulette_wheel_selection, select_solutions_from_gen, resetFitness
 from controller.cpg_rbfn import CPG_RBFN
@@ -57,7 +58,7 @@ def run_gen(generation, rewards_goal, min_equal_steps):
             #     equal_steps += 1
             # else:
             #     equal_steps = 0
-            
+
             # state = next_state
 
             # if (equal_steps>=min_equal_steps):
@@ -72,7 +73,7 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, min_equa
 
     best_per_gen = []
     best_indv = Individual(RBFN_UNITS, OUTPUT_UNITS)
-    
+
     #Initialize first gen
     generation = []
     try:
@@ -127,7 +128,7 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, min_equa
 
             #Reset generation's fitness
             resetFitness(generation)
-        
+
     except KeyboardInterrupt:
         for i in range(len(elite)):
             save(elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
@@ -137,7 +138,7 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, min_equa
     ENV.close()
 
     return best_indv, elite, best_per_gen
- 
+
 #Run the algorithms with learned models
 def test_algorithm(best_nn:Individual, episodes:int=1000, min_equal_steps:int=5):
     #Set test environment
@@ -162,7 +163,7 @@ def test_algorithm(best_nn:Individual, episodes:int=1000, min_equal_steps:int=5)
         #         equal_steps += 1
         # else:
         #     equal_steps = 0
-        
+
         # state = next_state
 
         # if (equal_steps>=min_equal_steps):

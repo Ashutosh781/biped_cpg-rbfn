@@ -1,11 +1,13 @@
+import os
+import sys
 import torch
 import torch.nn as nn
 import numpy as np
 
 # Add project root to the python path
-import os
-import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+# Import proect modules
 from utils.ann_lib import Delayline
 
 # RBF Layer
@@ -27,9 +29,9 @@ class RBF(nn.Module):
             The values are initialised from a standard normal distribution.
             Normalising inputs to have mean 0 and standard deviation 1 is
             recommended.
-        
+
         log_sigmas: logarithm of the learnable scaling factors of shape (out_features).
-        
+
         basis_func: the radial basis function used to transform the scaled
             distances.
     """
@@ -43,7 +45,7 @@ class RBF(nn.Module):
         # centers_2 = np.array([0.006249717362699904, 0.06958848153189617, 0.1281375358718078, 0.1717668091697633, 0.19437367595071275, 0.1964003046602903, 0.18120355848904637, 0.15172887207945684, 0.11015129843719734, 0.0584812790943683, -0.00721669178311189, -0.0704724839678656, -0.12881358922563063, -0.17213263267456702, -0.19442094097003218, -0.19618250847744553, -0.18077260364239828, -0.15111838485887752, -0.10938829351684973, -0.057593993857780745])
         # centers = np.column_stack((centers_1, centers_2))
         # self.centres = nn.Parameter(torch.from_numpy(centers))
-       
+
         self.centres = nn.Parameter(torch.Tensor(out_features, in_features))
         self.reset_parameters()
 
@@ -65,7 +67,7 @@ class RBF(nn.Module):
         for i in range(self.out_features):
             kernel_out = torch.exp(-(torch.pow(self.delayline[0].Read(0) - self.centres[i,0], 2) + torch.pow(self.delayline[1].Read(0) - self.centres[i,1], 2))/self.beta).detach().numpy()
             kernel_out_delayed = torch.exp(-(torch.pow(self.delayline[0].Read(int(self.cpg_period*0.5)) - self.centres[i,0], 2) + torch.pow(self.delayline[1].Read(int(self.cpg_period*0.5)) - self.centres[i,1], 2))/self.beta).detach().numpy()
-            
+
             distances[i,0] = kernel_out
             distances[i,1] = kernel_out_delayed
 
@@ -125,7 +127,7 @@ def basis_func_dict():
     """
     A helper function that returns a dictionary containing each RBF
     """
-    
+
     bases = {'gaussian': gaussian,
              'linear': linear,
              'quadratic': quadratic,

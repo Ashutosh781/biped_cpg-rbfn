@@ -1,16 +1,20 @@
+import os
+import sys
 import numpy as np
 from torch import nn, tanh, zeros, cat, from_numpy, flatten
 
 # Add project root to the python path
-import os
-import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+# Import proect modules
 from utils.ann_lib import postProcessing
 from controller.cpg import CPG
 from controller.rbf_layer import RBF
 from controller.motor_layer import MotorLayer
 
 class CPG_RBFN(nn.Module):
+  """CPG-RBFN network for controlling the robot"""
+
   def __init__(self, rbf_size, out_size):
     super(CPG_RBFN, self).__init__()
     self.in_size = 2
@@ -24,12 +28,13 @@ class CPG_RBFN(nn.Module):
     tau = 300
     self.cpg_period_postprocessor = postProcessing()
     randNum = np.random.randint(0,high=tau) % tau + 1
+
     for _ in range(randNum):
         cpg_output = self.cpg.get_output()
         self.cpg_period_postprocessor.calculateAmplitude(cpg_output[0], cpg_output[1])
         cpg_period = self.cpg_period_postprocessor.getPeriod()
         self.cpg.step()
-    
+
     self.rbfn = RBF(self.in_size, self.rbf_kernels, cpg_period)
 
     self.out = MotorLayer(self.rbf_kernels, self.out_size)
@@ -40,7 +45,7 @@ class CPG_RBFN(nn.Module):
     #Initialize weights and biases
     # nn.init.xavier_uniform_(self.out.weight)
     # nn.init.zeros_(self.out.bias)
-  
+
   def set_rbf_cpg_period(self):
     cpg_output = self.cpg.get_output()
     self.cpg_period_postprocessor.calculateAmplitude(cpg_output[0], cpg_output[1])

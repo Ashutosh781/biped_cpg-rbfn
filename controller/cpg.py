@@ -22,18 +22,18 @@ class CPG(nn.Module):
 
     def get_output(self):
         return self.activations
-    
+
     def reset(self):
         self.activations = np.array((0, 0.2012))
 
 # cpg = AdaptiveSO2CPGSynPlas()
-# cpg.setPhi     ( 0.02*np.pi )    
-# cpg.setEpsilon ( 0.1 )         
-# cpg.setAlpha   ( 1.01)         
-# cpg.setGamma   ( 1.0 )         
-# cpg.setBeta    ( 0.0 )         
-# cpg.setMu      ( 1.0 )         
-# cpg.setBetaDynamics   ( -1.0, 0.010, 0.00) 
+# cpg.setPhi     ( 0.02*np.pi )
+# cpg.setEpsilon ( 0.1 )
+# cpg.setAlpha   ( 1.01)
+# cpg.setGamma   ( 1.0 )
+# cpg.setBeta    ( 0.0 )
+# cpg.setMu      ( 1.0 )
+# cpg.setBetaDynamics   ( -1.0, 0.010, 0.00)
 # cpg.setGammaDynamics  ( -1.0, 0.010, 1.00)
 # cpg.setEpsilonDynamics(  1.0, 0.010, 0.01)
 
