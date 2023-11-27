@@ -40,7 +40,7 @@ class CPG_RBFN(nn.Module):
 
     self.dim = ((2 * self.rbf_kernels) + (self.rbf_kernels * self.out_size))
     self.params = zeros(self.dim)
-  
+
   def set_rbf_cpg_period(self):
     cpg_output = self.cpg.get_output()
     self.cpg_period_postprocessor.calculateAmplitude(cpg_output[0], cpg_output[1])
