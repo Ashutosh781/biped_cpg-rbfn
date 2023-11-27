@@ -43,7 +43,6 @@ def select_solutions_from_gen(generation: list[Individual], gen_size: int):
 def resetFitness(generation: list[Individual]):
     for i in generation:
         i.fitness = 0
-        i.model.cpg.reset()
 
 #Mutation operator
 def mutate(params: tensor, mutations: int = 1):

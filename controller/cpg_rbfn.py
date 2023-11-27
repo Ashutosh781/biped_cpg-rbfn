@@ -28,8 +28,7 @@ class CPG_RBFN(nn.Module):
     tau = 300
     self.cpg_period_postprocessor = postProcessing()
     randNum = np.random.randint(0,high=tau) % tau + 1
-
-    for _ in range(randNum):
+    for _ in range(tau+randNum):
         cpg_output = self.cpg.get_output()
         self.cpg_period_postprocessor.calculateAmplitude(cpg_output[0], cpg_output[1])
         cpg_period = self.cpg_period_postprocessor.getPeriod()
@@ -41,11 +40,7 @@ class CPG_RBFN(nn.Module):
 
     self.dim = ((2 * self.rbf_kernels) + (self.rbf_kernels * self.out_size))
     self.params = zeros(self.dim)
-
-    #Initialize weights and biases
-    # nn.init.xavier_uniform_(self.out.weight)
-    # nn.init.zeros_(self.out.bias)
-
+  
   def set_rbf_cpg_period(self):
     cpg_output = self.cpg.get_output()
     self.cpg_period_postprocessor.calculateAmplitude(cpg_output[0], cpg_output[1])

@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 class CPG(nn.Module):
     def __init__(self):
         super(CPG, self).__init__()
-        self.alpha = 1.23
-        self.phi = 0.06*np.pi
+        self.alpha = 1.22
+        self.phi = 0.1*np.pi
         self.weights = np.array([[self.alpha * np.cos(self.phi), self.alpha * np.sin(self.phi)],[-self.alpha * np.sin(self.phi), self.alpha * np.cos(self.phi)]])
-        self.activations = np.array((0, 0.2012))
+        self.activations = np.array((0.2012, 0))
 
     def update_weights(self):
         self.weights = np.array([[self.alpha * np.cos(self.phi), self.alpha * np.sin(self.phi)],[-self.alpha * np.sin(self.phi), self.alpha * np.cos(self.phi)]])
@@ -24,7 +24,7 @@ class CPG(nn.Module):
         return self.activations
 
     def reset(self):
-        self.activations = np.array((0, 0.2012))
+        self.activations = np.array((0.2012, 0))
 
 # cpg = AdaptiveSO2CPGSynPlas()
 # cpg.setPhi     ( 0.02*np.pi )
@@ -53,7 +53,7 @@ class CPG(nn.Module):
 # cpg = CPG()
 # x=[]
 # y=[]
-# for _ in range(360):
+# for _ in range(100):
 #     out=cpg.get_output()
 #     x.append(out[0])
 #     y.append(out[1])
