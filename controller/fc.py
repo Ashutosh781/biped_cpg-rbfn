@@ -1,6 +1,8 @@
 from torch import nn, tanh, zeros, cat, relu
 
 class FC(nn.Module):
+  """Fully Connected Feed Forward Network for controlling the robot"""
+
   def __init__(self, in_size, hid1_size, hid2_size, out_size):
     super(FC, self).__init__()
     self.in_size = in_size

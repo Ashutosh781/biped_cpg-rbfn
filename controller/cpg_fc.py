@@ -1,14 +1,19 @@
-from torch import nn, tanh, zeros, cat, relu, from_numpy
-import numpy as np
-# Add project root to the python path
 import os
 import sys
+import numpy as np
+from torch import nn, tanh, zeros, cat, relu, from_numpy
+
+# Add project root to the python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+# Import proect modules
 from utils.ann_lib import postProcessing
 from controller.cpg import CPG
 from controller.motor_layer import MotorLayer
 
 class CPG_FC(nn.Module):
+  """CPG + Feed Forward Network for controlling the robot"""
+
   def __init__(self, hid1_size, hid2_size, out_size):
     super(CPG_FC, self).__init__()
     self.in_size = 2

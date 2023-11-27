@@ -4,6 +4,8 @@ import numpy as np
 
 # Motor Layer
 class MotorLayer(nn.Module):
+    """Motor Layer for controlling the robot"""
+
     def __init__(self, in_features, out_features):
         super(MotorLayer, self).__init__()
         self.in_features = in_features
@@ -34,9 +36,11 @@ class MotorLayer(nn.Module):
             # output[4] += self.weight[4,i] * input[i,0]#kernel_out
             # output[5] += self.weight[5,i] * input[i,1]#kernel_out_delayed
 
+            # Hind leg - gets current output
             output[0] += self.weight[0,i] * input[i,0]#kernel_out
             output[1] += self.weight[1,i] * input[i,0]#kernel_out
             output[2] += self.weight[2,i] * input[i,0]#kernel_out
+            # Front leg - gets delayed output
             output[3] += self.weight[3,i] * input[i,1]#kernel_out_delayed
             output[4] += self.weight[4,i] * input[i,1]#kernel_out_delayed
             output[5] += self.weight[5,i] * input[i,1]#kernel_out_delayed

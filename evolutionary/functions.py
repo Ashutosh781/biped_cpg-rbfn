@@ -1,7 +1,14 @@
+import os
+import sys
 import random as rand
 import numpy as np
-from evolutionary.classes import Individual
 from torch import tensor
+
+# Add project root to the python path
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+# Import proect modules
+from evolutionary.individual import Individual
 
 #Normalize the fitness of a generation
 def norm_fitness_of_generation(generation: list[Individual]):

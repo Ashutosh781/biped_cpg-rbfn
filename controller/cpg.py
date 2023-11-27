@@ -4,6 +4,8 @@ from torch import nn
 import matplotlib.pyplot as plt
 
 class CPG(nn.Module):
+    """Central Pattern Generator network for controlling the robot"""
+
     def __init__(self):
         super(CPG, self).__init__()
         self.alpha = 1.22

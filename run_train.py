@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from controller.fc import FC
 from controller.cpg_rbfn import CPG_RBFN
 from controller.cpg_fc import CPG_FC
-from evolutionary.classes import Individual
+from evolutionary.individual import Individual
 from evolutionary.functions import mutate, norm_fitness_of_generation, roulette_wheel_selection, select_solutions_from_gen, resetFitness
 
 
@@ -41,11 +41,11 @@ MODELS_PATH = f"{CWD}/models/{MODEL_TYPE}"
 RBFN_UNITS = 25
 
 #FC Network
-FC_INPUT_UNITS = 17
+FC_INPUT_UNITS = ENV.observation_space.shape[0]
 FC_HID1_UNITS = 30
 FC_HID2_UNITS = 30
 
-OUTPUT_UNITS = 6
+OUTPUT_UNITS = ENV.action_space.shape[0]
 
 ### NEUROEVOLUTION PARAMS ###
 REWARDS_GOAL = 1000
@@ -76,11 +76,11 @@ def run_gen(generation, rewards_goal):
                     x = tensor(x, dtype=float32)
                     action = individual.choose_action(x)
 
-            state, reward, terminated, _, _ = ENV.step(action)
+            state, reward, terminated, truncated, _ = ENV.step(action)
 
             individual.fitness += reward
 
-            if terminated:
+            if terminated or truncated:
                 break
 
 #Train through neuro evolution
@@ -88,7 +88,7 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, elite_si
 
     best_per_gen = []
     best_indv = None
-    
+
     #Initialize first gen
     generation = []
 
