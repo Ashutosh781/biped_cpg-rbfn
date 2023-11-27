@@ -20,16 +20,16 @@ CWD = Path.cwd()
 #Folder to save models
 MODELS_PATH = f"{CWD}/models"
 
-# ENV_TYPE = 'MountainCar-v0'
-ENV_TYPE = "BipedalWalker-v3"
-# ENV_TYPE = "Walker2d-v4"
-
+ENV_TYPE = "HalfCheetah-v4"
+# ENV_TYPE = "BipedalWalker-v3"
 ENV = gym.make(ENV_TYPE)
-# ENV = gym.make(ENV_TYPE, healthy_reward=0.1, forward_reward_weight=2.0)
+
+# ENV_TYPE = "Walker2d-v4"
+# ENV = gym.make(ENV_TYPE, forward_reward_weight=2.0)
 
 #CPG-RBFN Parameters
-RBFN_UNITS = 20
-OUTPUT_UNITS = 4
+RBFN_UNITS = 25
+OUTPUT_UNITS = 6
 
 ##########-- NEUROEVOLUTION --##########
 
@@ -53,16 +53,16 @@ def run_gen(generation, rewards_goal, min_equal_steps):
             individual.fitness += reward
 
             #Count how many times we are stuck on the same step
-            if np.allclose(state, next_state):
-                equal_steps += 1
-            else:
-                equal_steps = 0
+            # if np.allclose(state, next_state):
+            #     equal_steps += 1
+            # else:
+            #     equal_steps = 0
             
-            state = next_state
+            # state = next_state
 
-            if (equal_steps>=min_equal_steps):
-                individual.fitness -= 50
-                break
+            # if (equal_steps>=min_equal_steps):
+            #     individual.fitness -= 50
+            #     break
 
             if terminated:
                 break
@@ -158,15 +158,15 @@ def test_algorithm(best_nn:Individual, episodes:int=1000, min_equal_steps:int=5)
 
         total_rewards += reward
 
-        if np.allclose(state, next_state):
-                equal_steps += 1
-        else:
-            equal_steps = 0
+        # if np.allclose(state, next_state):
+        #         equal_steps += 1
+        # else:
+        #     equal_steps = 0
         
-        state = next_state
+        # state = next_state
 
-        if (equal_steps>=min_equal_steps):
-            total_rewards -= 50
+        # if (equal_steps>=min_equal_steps):
+        #     total_rewards -= 50
 
         print(f"Rewards: {total_rewards}")
 
@@ -181,8 +181,8 @@ def test_algorithm(best_nn:Individual, episodes:int=1000, min_equal_steps:int=5)
 elite_size = 20
 min_equal_steps = 5
 rewards_goal = 500
-generations = 100
-gen_size = 20
+generations = 200
+gen_size = 40
 
 ### FIRST NEUROEVOLUTION RUN ###
 # best_indv, elite, best_per_gen = neuro_evolution(gen_size=gen_size, generations=generations, rewards_goal=rewards_goal, min_equal_steps = min_equal_steps, elite_size=elite_size)
@@ -191,6 +191,7 @@ gen_size = 20
 
 ### CONTINUE NEUROEVOLUTION RUN ###
 # Load elite
+
 elite = []
 for i in range(elite_size):
     model = CPG_RBFN(RBFN_UNITS, OUTPUT_UNITS)
@@ -198,7 +199,6 @@ for i in range(elite_size):
     best_indv = Individual(RBFN_UNITS, OUTPUT_UNITS)
     best_indv.model = model
     elite.append(best_indv)
-
 best_indv, new_elite, best_per_gen = neuro_evolution(gen_size=gen_size, generations=generations, rewards_goal=rewards_goal, min_equal_steps = min_equal_steps, elite_size=elite_size, elite=elite)
 for i in range(len(new_elite)):
     save(new_elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
@@ -206,6 +206,7 @@ for i in range(len(new_elite)):
 ## LOAD BEST SAVED MODEL ###
 # model = CPG_RBFN(RBFN_UNITS, OUTPUT_UNITS)
 # model.load_state_dict(load(f"{MODELS_PATH}/model0.pth"))
+# print(model.state_dict())
 # best_indv = Individual(RBFN_UNITS, OUTPUT_UNITS)
 # best_indv.model = model
 # test_algorithm(best_nn=best_indv)

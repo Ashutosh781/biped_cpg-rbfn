@@ -49,7 +49,7 @@ class RBF(nn.Module):
 
         self.beta = 0.04
 
-        self.tau = 300
+        self.tau = 100
         self.delayline = [Delayline(self.tau), Delayline(self.tau)]
         self.cpg_period = cpg_period
 
@@ -69,12 +69,10 @@ class RBF(nn.Module):
             distances[i,0] = kernel_out
             distances[i,1] = kernel_out_delayed
 
-        distances = torch.from_numpy(distances).float()
-
         for i in self.delayline:
             i.Step()
 
-        return distances
+        return torch.from_numpy(distances).float()
 
 # RBFs
 def gaussian(alpha):
