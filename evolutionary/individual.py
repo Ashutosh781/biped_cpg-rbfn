@@ -11,22 +11,17 @@ class Individual():
         # Fitness of the individual in each generation
         self.fitness = 0.0
 
-    def choose_action(self):
-        """Choose action when no state is given"""
-
-        output = self.model.forward()
-
-        return output.detach().numpy()
-
-    def choose_action(self, x):
-        """Choose action is state is given"""
-
-        # Convert state to tensor
-        x = np.array(x, dtype=np.float32)
-        x = torch.tensor(x, dtype=torch.float32)
-
-        # Get action from model
-        output = self.model.forward(x)
+    def choose_action(self, x=None):
+        """Choose action"""
+        output = None
+        if x:
+            # Convert state to tensor
+            x = np.array(x, dtype=np.float32)
+            x = torch.tensor(x, dtype=torch.float32)
+            # Get action from model
+            output = self.model.forward(x)
+        else:
+            output = self.model.forward()
 
         return output.detach().numpy()
 
