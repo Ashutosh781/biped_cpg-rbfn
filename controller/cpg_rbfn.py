@@ -8,9 +8,9 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 
 from utils.ann_lib import postProcessing
-from controller.cpg import CPG
-from controller.rbf_layer import RBF
-from controller.motor_layer import MotorLayer
+from controller.cpg_layers import CPG
+from controller.rbf_layers import RBF
+from controller.motor_layers import MotorLayer
 
 class CPG_RBFN(nn.Module):
   """CPG-RBFN network for controlling the robot"""
@@ -45,6 +45,11 @@ class CPG_RBFN(nn.Module):
     cpg_output = self.cpg.get_output()
     self.cpg_period_postprocessor.calculateAmplitude(cpg_output[0], cpg_output[1])
     self.rbfn.cpg_period = self.cpg_period_postprocessor.getPeriod()
+  
+  # def calculate_centers(self):
+  #   cpg_output = self.cpg.get_output()
+  #   self.cpg_period_postprocessor.calculateAmplitude(cpg_output[0], cpg_output[1])
+  #   self.rbfn.cpg_period = self.cpg_period_postprocessor.getPeriod()
 
   def forward(self):
     self.set_rbf_cpg_period()

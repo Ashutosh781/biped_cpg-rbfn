@@ -11,6 +11,7 @@ from pathlib import Path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from controller.fc import FC
+from controller.rbfn_fc import RBFN_FC
 from controller.cpg_rbfn import CPG_RBFN
 from controller.cpg_fc import CPG_FC
 from evolutionary.individual import Individual
@@ -30,15 +31,17 @@ models = types.SimpleNamespace()
 models.CPG_RBFN_MODEL = "CPG-RBFN"
 models.CPG_FC_MODEL = "CPG-FC"
 models.FC_MODEL = 'FC'
+models.RBFN_FC_MODEL = 'RBFN-FC'
 MODEL_TYPE = models.CPG_RBFN_MODEL
 #MODEL_TYPE = models.CPG_FC_MODEL
 #MODEL_TYPE = models.FC_MODEL
+#MODEL_TYPE = models.RBFN_FC_MODEL
 
 #Folder to save models
-MODELS_PATH = f"{CWD}/models/{MODEL_TYPE}"
+MODELS_PATH = f"{CWD}/sim/models/{MODEL_TYPE}"
 
 #CPG-RBFN Parameters
-RBFN_UNITS = 25
+RBFN_UNITS = 20
 
 #FC Network
 FC_INPUT_UNITS = ENV.observation_space.shape[0]
@@ -49,7 +52,7 @@ OUTPUT_UNITS = ENV.action_space.shape[0]
 
 ### NEUROEVOLUTION PARAMS ###
 REWARDS_GOAL = 1000
-GENERATIONS = 500
+GENERATIONS = 100
 GEN_SIZE = 10
 ELITE_SIZE = 5
 
@@ -71,7 +74,7 @@ def run_gen(generation, rewards_goal):
             match(MODEL_TYPE):
                 case models.CPG_RBFN_MODEL | models.CPG_FC_MODEL:
                     action = individual.choose_action()
-                case models.FC_MODEL:
+                case models.FC_MODEL | models.RBFN_FC_MODEL:
                     x = np.array(state, dtype=np.float32)
                     x = tensor(x, dtype=float32)
                     action = individual.choose_action(x)
@@ -107,6 +110,8 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, elite_si
                     model = CPG_FC(FC_HID1_UNITS, FC_HID2_UNITS, OUTPUT_UNITS)
                 case models.FC_MODEL:
                     model = FC(FC_INPUT_UNITS, FC_HID1_UNITS, FC_HID2_UNITS, OUTPUT_UNITS)
+                case models.RBFN_FC_MODEL:
+                    model = RBFN_FC(FC_INPUT_UNITS, RBFN_UNITS, OUTPUT_UNITS)
 
             new_individual = Individual(model)
             generation.append(new_individual)
@@ -139,6 +144,8 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, elite_si
                         model = CPG_FC(FC_HID1_UNITS, FC_HID2_UNITS, OUTPUT_UNITS)
                     case models.FC_MODEL:
                         model = FC(FC_INPUT_UNITS, FC_HID1_UNITS, FC_HID2_UNITS, OUTPUT_UNITS)
+                    case models.RBFN_FC_MODEL:
+                        model = RBFN_FC(FC_INPUT_UNITS, RBFN_UNITS, OUTPUT_UNITS)
 
                 child = Individual(model)
                 child.model.set_params(mutate(parent.model.get_params(), mutations))
@@ -163,7 +170,7 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, elite_si
 
             #Reset generation's fitness
             resetFitness(generation)
-            if MODEL_TYPE == models.CPG_RBFN_MODEL:
+            if MODEL_TYPE == models.CPG_RBFN_MODEL or MODEL_TYPE == models.CPG_FC_MODEL:
                 for i in generation:
                     i.model.cpg.reset()
 
@@ -222,6 +229,8 @@ match(MODEL_TYPE):
         model = CPG_FC(FC_HID1_UNITS, FC_HID2_UNITS, OUTPUT_UNITS)
     case models.FC_MODEL:
         model = FC(FC_INPUT_UNITS, FC_HID1_UNITS, FC_HID2_UNITS, OUTPUT_UNITS)
+    case models.RBFN_FC_MODEL:
+        model = RBFN_FC(FC_INPUT_UNITS, RBFN_UNITS, OUTPUT_UNITS)
 
 ### CONTINUE NEUROEVOLUTION RUN ###
 

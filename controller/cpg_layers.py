@@ -28,29 +28,6 @@ class CPG(nn.Module):
     def reset(self):
         self.activations = np.array((0.2012, 0))
 
-# cpg = AdaptiveSO2CPGSynPlas()
-# cpg.setPhi     ( 0.02*np.pi )
-# cpg.setEpsilon ( 0.1 )
-# cpg.setAlpha   ( 1.01)
-# cpg.setGamma   ( 1.0 )
-# cpg.setBeta    ( 0.0 )
-# cpg.setMu      ( 1.0 )
-# cpg.setBetaDynamics   ( -1.0, 0.010, 0.00)
-# cpg.setGammaDynamics  ( -1.0, 0.010, 1.00)
-# cpg.setEpsilonDynamics(  1.0, 0.010, 0.01)
-
-# cpg.setOutput(0,0.2012)
-# cpg.setOutput(1,0)
-
-# x=[]
-# y=[]
-# for _ in range(360):
-#     x.append(cpg.getOutput(0))
-#     y.append(cpg.getOutput(1))
-# plt.plot(x)
-# plt.plot(y)
-# plt.show()
-
 # TEST CPG
 # cpg = CPG()
 # x=[]

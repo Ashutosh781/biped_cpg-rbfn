@@ -7,9 +7,7 @@ from torch import nn, tanh, zeros, cat, relu, from_numpy
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 # Import proect modules
-from utils.ann_lib import postProcessing
-from controller.cpg import CPG
-from controller.motor_layer import MotorLayer
+from controller.cpg_layers import CPG
 
 class CPG_FC(nn.Module):
   """CPG + Feed Forward Network for controlling the robot"""
