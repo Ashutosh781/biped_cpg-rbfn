@@ -15,6 +15,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from evolutionary.individual import Individual, Models
 from controller.fc import FC
 from controller.cpg_fc import CPG_FC
+from controller.rbfn_fc import RBFN_FC
 from controller.cpg_rbfn import CPG_RBFN
 
 
@@ -70,6 +71,8 @@ class NeuroEvolution():
             match self.model_type:
                 case self.models.CPG_RBFN_MODEL:
                     model = CPG_RBFN(self.rbfn_units, self.out_size)
+                case self.models.RBFN_FC_MODEL:
+                    model = RBFN_FC(self.in_size, self.rbfn_units, self.out_size)
                 case self.models.CPG_FC_MODEL:
                     model = CPG_FC(self.fc_h1, self.fc_h2, self.out_size)
                 case self.models.FC_MODEL:

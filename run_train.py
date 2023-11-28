@@ -15,7 +15,7 @@ def neuro_evolution(model_type:str, env_type: str, generations: int, max_steps: 
 
     try:
         # Check model type
-        if model_type not in ["FC", "CPG-FC", "CPG-RBFN"]:
+        if model_type not in ["FC", "CPG-FC", "RBFN-FC", "CPG-RBFN"]:
             raise ValueError("Model type not supported")
 
         # Initialize neuroevolution
@@ -54,6 +54,7 @@ if __name__ == "__main__":
     models = Models()
     # model_type = models.FC_MODEL
     # model_type = models.CPG_FC_MODEL
+    # model_type = models.RBFN_FC_MODEL
     model_type = models.CPG_RBFN_MODEL
     # model_type = models.RL_PIBB
 

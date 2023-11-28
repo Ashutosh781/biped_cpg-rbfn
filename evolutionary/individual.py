@@ -37,5 +37,6 @@ class Models(SimpleNamespace):
     def __init__(self):
         self.CPG_RBFN_MODEL = "CPG-RBFN"
         self.CPG_FC_MODEL = "CPG-FC"
+        self.RBFN_FC_MODEL = "RBFN-FC"
         self.FC_MODEL = 'FC'
         self.RL_PIBB = "RL-PIBB"
