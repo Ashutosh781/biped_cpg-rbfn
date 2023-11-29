@@ -1,5 +1,5 @@
-# biped_cpg-rbfn
+# neuro-evolutionary_cpg-rbfn
 
-Learning CPG parameters for biped locomotion based on CPG-RBFN framework.
+Neural Evolutionary Learning for legged locomotion based on CPG-RBFN framework.
 
 Course project for the course ROB537 Learning Based Control.
