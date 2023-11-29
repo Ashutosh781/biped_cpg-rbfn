@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from evolutionary.individual import Models
 from evolutionary.neuroevolution import NeuroEvolution
-from rl.rl import RlPibb
+from rl.rlpibb import RlPibb
 
 
 def neuro_evolution(model_type:str, env_type: str, generations: int, max_steps: int, gen_size: int, mean: float=1.0, std: float=0.001):
