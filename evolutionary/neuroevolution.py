@@ -1,7 +1,6 @@
 import os
 import sys
 import csv
-from copy import deepcopy
 import random as rand
 import numpy as np
 import matplotlib.pyplot as plt
@@ -141,11 +140,20 @@ class NeuroEvolution():
         """Select new generation from the previous generation"""
 
         # Sort the generation by fitness
-        generation_sorted = deepcopy(generation)
-        generation_sorted.sort(key=lambda x: x.fitness, reverse=True)
+        generation.sort(key=lambda x: x.fitness, reverse=True)
 
         # Select the top gen_size individuals
-        return generation_sorted[:gen_size]
+        return generation[:gen_size]
+
+    def copy_gen(self, generation: list[Individual]):
+        """Copy the generation as deepcopy doesn't work"""
+
+        new_gen = self.get_gen(len(generation))
+
+        for i, individual in enumerate(generation):
+            new_gen[i].model.set_params(individual.model.get_params())
+
+        return new_gen
 
     def run(self, verbose: bool = False):
         """Run the algorithm"""
@@ -163,7 +171,7 @@ class NeuroEvolution():
         for gen_count in range(self.generations):
 
             # Get a mutated copy of the generation
-            children = deepcopy(self.generation)
+            children = self.copy_gen(self.generation)
 
             # Mutate the children
             for child in children:
