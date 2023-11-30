@@ -5,7 +5,7 @@ import torch
 import random as rand
 import numpy as np
 import matplotlib.pyplot as plt
-import gymnasium as gym
+import gym
 
 # Add project root to the python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -203,7 +203,10 @@ class NeuroEvolution():
             for child in children:
                 # Mutations = -1 means mutate all parameters, otherwise mutate a random number of parameters
                 # Here we mutate all parameters for all the parents to get the children
-                child.model.set_params(self.mutate(child.model.get_params(), mutations=-1))
+                mutate_percent = 0.1
+                mutations = int(child.model.dim * mutate_percent)
+
+                child.model.set_params(self.mutate(child.model.get_params(), mutations=mutations))
 
             # Run the children
             self.run_gen(children)

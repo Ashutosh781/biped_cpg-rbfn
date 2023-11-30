@@ -19,7 +19,7 @@ def neuro_evolution_train(model_type:str, env_type: str, generations: int, max_s
             raise ValueError("Model type not supported")
 
         # Initialize neuroevolution
-        neuro_evolution = NeuroEvolution(model_type, env_type, generations, max_steps, gen_size, mean, std, elite_size=elite_size, load_elite=load_elite)
+        neuro_evolution = NeuroEvolution(model_type=model_type, env_type=env_type, generations=generations, max_steps=max_steps, gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=load_elite)
 
         # Run neuroevolution
         print("Running Neuro evolution training...")
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     std = 0.001
 
     # Run neuroevolution
-    neuro_evolution_train(model_type, env_type, generations, max_steps, gen_size, mean, std, elite_size=elite_size, load_elite=False)
+    neuro_evolution_train(model_type=model_type, env_type=env_type, generations=generations, max_steps=max_steps, gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=False)
 
     # RL-PIBB PARAMS
     epochs = 1000
