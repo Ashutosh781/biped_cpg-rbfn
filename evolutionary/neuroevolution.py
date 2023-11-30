@@ -1,10 +1,10 @@
 import os
 import sys
 import csv
+import torch
 import random as rand
 import numpy as np
 import matplotlib.pyplot as plt
-from torch import tensor
 import gymnasium as gym
 
 # Add project root to the python path
@@ -100,7 +100,7 @@ class NeuroEvolution():
                         action = individual.choose_action()
                     case 'FC':
                         x = np.array(state, dtype=np.float32)
-                        x = tensor(x, dtype=np.float32)
+                        x = torch.tensor(x, dtype=torch.float32)
                         action = individual.choose_action(x)
 
                 # Take action in environment
@@ -122,8 +122,9 @@ class NeuroEvolution():
 
         return [individual.fitness for individual in generation]
 
-    def mutate(self, params: tensor, mutations: int = -1):
-        """Mutate the parameters of an Individual"""
+    def mutate(self, params: torch.tensor, mutations: int = -1):
+        """Mutate the parameters of an Individual
+        -1 means mutate all parameters, otherwise mutate a random number of parameters"""
 
         # Mutate all parameters
         if mutations == -1:
@@ -170,11 +171,13 @@ class NeuroEvolution():
         # Iterate generations
         for gen_count in range(self.generations):
 
-            # Get a mutated copy of the generation
+            # Get a copy of the generation
             children = self.copy_gen(self.generation)
 
             # Mutate the children
             for child in children:
+                # Mutations = -1 means mutate all parameters, otherwise mutate a random number of parameters
+                # Here we mutate all parameters for all the parents to get the children
                 child.model.set_params(self.mutate(child.model.get_params(), mutations=-1))
 
             # Run the children
@@ -213,7 +216,7 @@ class NeuroEvolution():
 
         # Save models of the last generation
         for i, indv in enumerate(self.generation):
-            indv.model.save(os.path.join(path, f"model{i}.pt"))
+            torch.save(indv.model.state_dict(), os.path.join(path, f"model{i}.pt"))
 
     def get_plots(self, is_show: bool = False):
         """Plot the reward history statistics"""
