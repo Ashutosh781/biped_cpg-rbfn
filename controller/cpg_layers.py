@@ -45,7 +45,7 @@ class CPG(nn.Module):
         self.signal_2 = []
         self.max_value = 0
         self.min_value = 0
-        
+
         for _ in range(int(self.period)):
             cpg_output = self.get_output()
             self.signal_1.append(cpg_output[0])

@@ -20,21 +20,24 @@ from controller.cpg_rbfn import CPG_RBFN
 class NeuroEvolution():
     """Class for all the Neuro Evolutionary functions"""
 
-    def __init__(self, model_type: str, env_type: str, generations: int=100, max_steps: int=1000,
-                 gen_size: int=10, elite_size: int=5, load_elite: bool=False,mean: float=1.0, std: float=0.001):
+    def __init__(self, model_type: str, env_type: str, fixed_centres: bool=False, generations: int=100, max_steps: int=1000,
+                 gen_size: int=10, elite_size: int=10, load_elite: bool=False, mean: float=1.0, std: float=0.001):
         """Initialize the Neuro Evolutionary parameters"""
 
         # Arguments
         self.model_type = model_type
         self.env_type = env_type
+        self.fixed_centres = fixed_centres
         self.generations = generations
         self.max_steps = max_steps
         self.gen_size = gen_size
         self.elite_size = elite_size
         self.load_elite = load_elite
-        self.elite_path = os.path.join(os.getcwd(), "data", model_type)
         self.mean = mean
         self.std = std
+
+        # Path for saving/loading elite
+        self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", model_type)
 
         # Create the environment
         self.env = gym.make(self.env_type)
@@ -78,7 +81,7 @@ class NeuroEvolution():
                 model = CPG_FC(self.fc_h1, self.fc_h2, self.out_size)
             case self.models.FC_MODEL:
                 model = FC(self.in_size, self.fc_h1, self.fc_h2, self.out_size)
-        
+
         if self.load_elite:
             print("Loading Elite..")
             #Load files
@@ -92,7 +95,6 @@ class NeuroEvolution():
 
         for _ in range(self.gen_size-len(elite)):
             generation.append(Individual(model))
-            # TODO: Need a flag in CPG-RBFN to have RBF centers fixed from formulae or learnable
 
         return generation
 

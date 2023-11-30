@@ -49,12 +49,12 @@ class RlPibb():
         self.out_size = self.env.action_space.shape[0]
 
         # Model parameters
-        self.rbfn_units = 25
+        self.rbfn_units = 20
 
         # Initialize model and agent
-        self.model = CPG_RBFN(self.rbfn_units, self.out_size)
+        # Centres of RBF are fixed calculated from formula
+        self.model = CPG_RBFN(self.rbfn_units, self.out_size, fixed_centers=True)
         self.agent = Individual(self.model)
-        # TODO: Need a flag in CPG-RBFN to have RBF centers fixed from formulae or learnable
 
         # Reward history
         self.reward_history = []

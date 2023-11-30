@@ -10,7 +10,8 @@ from evolutionary.neuroevolution import NeuroEvolution
 from rl.rlpibb import RlPibb
 
 
-def neuro_evolution_train(model_type:str, env_type: str, generations: int, max_steps: int, gen_size: int, elite_size: int, mean: float=1.0, std: float=0.001, load_elite: bool=False):
+def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, generations: int, max_steps: int, gen_size: int,
+                          elite_size: int, load_elite: bool=False, mean: float=1.0, std: float=0.001):
     """Train a model using neuroevolution"""
 
     try:
@@ -19,7 +20,8 @@ def neuro_evolution_train(model_type:str, env_type: str, generations: int, max_s
             raise ValueError("Model type not supported")
 
         # Initialize neuroevolution
-        neuro_evolution = NeuroEvolution(model_type=model_type, env_type=env_type, generations=generations, max_steps=max_steps, gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=load_elite)
+        neuro_evolution = NeuroEvolution(model_type=model_type, env_type=env_type, fixed_centres=fixed_centres, generations=generations, max_steps=max_steps,
+                                         gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=load_elite)
 
         # Run neuroevolution
         print("Running Neuro evolution training...")
@@ -90,6 +92,7 @@ if __name__ == "__main__":
     model_type = models.CPG_RBFN_MODEL
 
     # NEUROEVOLUTION PARAMS
+    fixed_centres = False
     generations = 100
     max_steps = 1000
     gen_size = 10
@@ -99,7 +102,8 @@ if __name__ == "__main__":
     std = 0.001
 
     # Run neuroevolution
-    neuro_evolution_train(model_type=model_type, env_type=env_type, generations=generations, max_steps=max_steps, gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=load_elite)
+    neuro_evolution_train(model_type=model_type, env_type=env_type, fixed_centres=fixed_centres, generations=generations, max_steps=max_steps,
+                          gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=load_elite)
 
     # RL-PIBB PARAMS
     epochs = 1000

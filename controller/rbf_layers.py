@@ -63,9 +63,9 @@ class SimpleRBF(nn.Module):
             The values are initialised from a standard normal distribution.
             Normalising inputs to have mean 0 and standard deviation 1 is
             recommended.
-        
+
         log_sigmas: logarithm of the learnable scaling factors of shape (out_features).
-        
+
         basis_func: the radial basis function used to transform the scaled
             distances.
     """
