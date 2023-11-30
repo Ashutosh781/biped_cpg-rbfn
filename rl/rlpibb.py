@@ -71,11 +71,18 @@ class RlPibb():
         # Create a list of agents with noise in the parameters
         rollout_agents = []
         rollout_agents_noise = []
+
         for i in range(self.rollout_size):
             agent = Individual(self.model)
-            agent_param_noise = np.random.normal(0, self.variance, self.agent.get_params().shape)
-            agent_params = self.agent.get_params() * agent_param_noise
-            agent.set_params(agent_params)
+            # Get noise in the parameters
+            agent_param_noise = np.random.normal(0, self.variance, self.agent.model.get_params().shape)
+            # Convert to tensor
+            agent_param_noise_tensor = torch.from_numpy(agent_param_noise).float()
+            # Multiply noise with parameters
+            agent_params = torch.mul(self.agent.model.get_params(), agent_param_noise_tensor)
+            # Set the parameters of the agent
+            agent.model.set_params(agent_params)
+
             rollout_agents.append(agent)
             rollout_agents_noise.append(agent_param_noise)
 
@@ -111,7 +118,7 @@ class RlPibb():
                     break
 
             # Reset CPG network
-            agent.model.cpg_reset()
+            agent.model.cpg.reset()
 
             # Add reward to the list
             rewards.append(reward_sum)
@@ -153,15 +160,17 @@ class RlPibb():
             # Record the weight update history
             self.weight_update_history.append(weight_update)
 
+            weight_update = torch.from_numpy(weight_update).float()
+
             # Update the agent weights based rollout rewards using PIBB
-            self.agent.set_params(self.agent.get_params() + weight_update)
+            self.agent.model.set_params(torch.add(self.agent.model.get_params(), weight_update))
 
             # Decay the variance
             self.variance *= self.decay
 
             # Print progress if verbose
             if verbose and (epoch % self.epochs // 10 == 0 or epoch == self.epochs - 1):
-                print(f"Generation {epoch+1}: Best Reward {self.best_per_epoch[-1]}")
+                print(f"Epoch {epoch+1}: Best Reward {self.best_per_epoch[-1]}")
 
     def save(self, path: str):
         """Save reward history to csv and model of the last epoch"""
