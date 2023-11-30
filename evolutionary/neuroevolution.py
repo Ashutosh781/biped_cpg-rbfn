@@ -222,7 +222,7 @@ class NeuroEvolution():
             self.mean_error_per_gen.append(np.std(self.reward_history[-1]) / np.sqrt(self.generations + 1))
 
             # Print progress if verbose
-            if verbose and (gen_count % self.generations // 10 == 0 or gen_count == self.generations - 1):
+            if verbose:
                 print(f"Generation {gen_count+1}: Best Reward {self.best_per_gen[-1]}")
 
     def save(self, path: str):

@@ -169,7 +169,7 @@ class RlPibb():
             self.variance *= self.decay
 
             # Print progress if verbose
-            if verbose and (epoch % self.epochs // 10 == 0 or epoch == self.epochs - 1):
+            if verbose:
                 print(f"Epoch {epoch+1}: Best Reward {self.best_per_epoch[-1]}")
 
     def save(self, path: str):
