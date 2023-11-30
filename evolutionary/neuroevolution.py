@@ -5,7 +5,7 @@ import torch
 import random as rand
 import numpy as np
 import matplotlib.pyplot as plt
-import gym
+from gymnasium import gym
 
 # Add project root to the python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -69,38 +69,30 @@ class NeuroEvolution():
 
         generation = []
         elite = []
+
+        #Set model
+        match self.model_type:
+            case self.models.CPG_RBFN_MODEL:
+                model = CPG_RBFN(self.rbfn_units, self.out_size)
+            case self.models.RBFN_FC_MODEL:
+                model = RBFN_FC(self.in_size, self.rbfn_units, self.out_size)
+            case self.models.CPG_FC_MODEL:
+                model = CPG_FC(self.fc_h1, self.fc_h2, self.out_size)
+            case self.models.FC_MODEL:
+                model = FC(self.in_size, self.fc_h1, self.fc_h2, self.out_size)
         
         if self.load_elite:
-            match self.model_type:
-                case self.models.CPG_RBFN_MODEL:
-                    model = CPG_RBFN(self.rbfn_units, self.out_size)
-                case self.models.RBFN_FC_MODEL:
-                    model = RBFN_FC(self.in_size, self.rbfn_units, self.out_size)
-                case self.models.CPG_FC_MODEL:
-                    model = CPG_FC(self.fc_h1, self.fc_h2, self.out_size)
-                case self.models.FC_MODEL:
-                    model = FC(self.in_size, self.fc_h1, self.fc_h2, self.out_size)
-            
+            print("Loading Elite..")
+            #Load files
             for i in range(self.elite_size):
                 model.load_state_dict(torch.load(f"{self.elite_path}/model{i}.pt"))
                 elite.append(Individual(model))
 
             # Add elite if any
-            for i in range(len(self.elite)):
-                generation.append(self.elite[i])
+            for i in range(len(elite)):
+                generation.append(elite[i])
 
         for _ in range(self.gen_size-len(elite)):
-            # Create the model
-            match self.model_type:
-                case self.models.CPG_RBFN_MODEL:
-                    model = CPG_RBFN(self.rbfn_units, self.out_size)
-                case self.models.RBFN_FC_MODEL:
-                    model = RBFN_FC(self.in_size, self.rbfn_units, self.out_size)
-                case self.models.CPG_FC_MODEL:
-                    model = CPG_FC(self.fc_h1, self.fc_h2, self.out_size)
-                case self.models.FC_MODEL:
-                    model = FC(self.in_size, self.fc_h1, self.fc_h2, self.out_size)
-
             generation.append(Individual(model))
             # TODO: Need a flag in CPG-RBFN to have RBF centers fixed from formulae or learnable
 
@@ -174,7 +166,7 @@ class NeuroEvolution():
     def copy_gen(self, generation: list[Individual]):
         """Copy the generation as deepcopy doesn't work"""
 
-        new_gen = self.get_gen(len(generation))
+        new_gen = self.get_gen()
 
         for i, individual in enumerate(generation):
             new_gen[i].model.set_params(individual.model.get_params())
@@ -203,7 +195,7 @@ class NeuroEvolution():
             for child in children:
                 # Mutations = -1 means mutate all parameters, otherwise mutate a random number of parameters
                 # Here we mutate all parameters for all the parents to get the children
-                mutate_percent = 0.1
+                mutate_percent = 0.2
                 mutations = int(child.model.dim * mutate_percent)
 
                 child.model.set_params(self.mutate(child.model.get_params(), mutations=mutations))

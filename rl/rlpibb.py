@@ -2,7 +2,7 @@ import os
 import sys
 import csv
 import torch
-import gym
+from gymnasium import gym
 import numpy as np
 import matplotlib.pyplot as plt
 

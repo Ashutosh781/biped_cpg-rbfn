@@ -94,11 +94,12 @@ if __name__ == "__main__":
     max_steps = 1000
     gen_size = 10
     elite_size = 10
+    load_elite=True
     mean = 1.0
     std = 0.001
 
     # Run neuroevolution
-    neuro_evolution_train(model_type=model_type, env_type=env_type, generations=generations, max_steps=max_steps, gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=False)
+    neuro_evolution_train(model_type=model_type, env_type=env_type, generations=generations, max_steps=max_steps, gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=load_elite)
 
     # RL-PIBB PARAMS
     epochs = 1000
