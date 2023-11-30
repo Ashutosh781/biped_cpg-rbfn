@@ -19,12 +19,11 @@ from controller.cpg_rbfn import CPG_RBFN
 
 from evolutionary.functions import mutate, norm_fitness_of_generation, roulette_wheel_selection, select_solutions_from_gen, resetFitness
 
-
 class NeuroEvolution():
     """Class for all the Neuro Evolutionary functions"""
 
     def __init__(self, model_type: str, env_type: str, generations: int=100, max_steps: int=1000,
-                 gen_size: int=10, elite: list[Individual]=[], mean: float=1.0, std: float=0.001):
+                 gen_size: int=10, elite_size: int=5, load_elite: bool=False,mean: float=1.0, std: float=0.001):
         """Initialize the Neuro Evolutionary parameters"""
 
         # Arguments
@@ -33,7 +32,9 @@ class NeuroEvolution():
         self.generations = generations
         self.max_steps = max_steps
         self.gen_size = gen_size
-        self.elite = elite
+        self.elite_size = elite_size
+        self.load_elite = load_elite
+        self.elite_path = os.path.join(os.getcwd(), "data", model_type)
         self.mean = mean
         self.std = std
 
@@ -67,11 +68,28 @@ class NeuroEvolution():
         """Create a new generation"""
 
         generation = []
-        # Add elite if any
-        for i in range(len(self.elite)):
-            generation.append(self.elite[i])
+        elite = []
+        
+        if self.load_elite:
+            match self.model_type:
+                case self.models.CPG_RBFN_MODEL:
+                    model = CPG_RBFN(self.rbfn_units, self.out_size)
+                case self.models.RBFN_FC_MODEL:
+                    model = RBFN_FC(self.in_size, self.rbfn_units, self.out_size)
+                case self.models.CPG_FC_MODEL:
+                    model = CPG_FC(self.fc_h1, self.fc_h2, self.out_size)
+                case self.models.FC_MODEL:
+                    model = FC(self.in_size, self.fc_h1, self.fc_h2, self.out_size)
+            
+            for i in range(self.elite_size):
+                model.load_state_dict(torch.load(f"{self.elite_path}/model{i}.pt"))
+                elite.append(Individual(model))
 
-        for _ in range(self.gen_size-len(self.elite)):
+            # Add elite if any
+            for i in range(len(self.elite)):
+                generation.append(self.elite[i])
+
+        for _ in range(self.gen_size-len(elite)):
             # Create the model
             match self.model_type:
                 case self.models.CPG_RBFN_MODEL:

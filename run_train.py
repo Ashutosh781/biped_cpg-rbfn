@@ -10,7 +10,7 @@ from evolutionary.neuroevolution import NeuroEvolution
 from rl.rlpibb import RlPibb
 
 
-def neuro_evolution_train(model_type:str, env_type: str, generations: int, max_steps: int, gen_size: int, mean: float=1.0, std: float=0.001):
+def neuro_evolution_train(model_type:str, env_type: str, generations: int, max_steps: int, gen_size: int, elite_size: int, mean: float=1.0, std: float=0.001, load_elite: bool=False):
     """Train a model using neuroevolution"""
 
     try:
@@ -19,7 +19,7 @@ def neuro_evolution_train(model_type:str, env_type: str, generations: int, max_s
             raise ValueError("Model type not supported")
 
         # Initialize neuroevolution
-        neuro_evolution = NeuroEvolution(model_type, env_type, generations, max_steps, gen_size, mean, std)
+        neuro_evolution = NeuroEvolution(model_type, env_type, generations, max_steps, gen_size, mean, std, elite_size=elite_size, load_elite=load_elite)
 
         # Run neuroevolution
         print("Running Neuro evolution training...")
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     std = 0.001
 
     # Run neuroevolution
-    neuro_evolution_train(model_type, env_type, generations, max_steps, gen_size, mean, std)
+    neuro_evolution_train(model_type, env_type, generations, max_steps, gen_size, mean, std, elite_size=elite_size, load_elite=False)
 
     # RL-PIBB PARAMS
     epochs = 1000
