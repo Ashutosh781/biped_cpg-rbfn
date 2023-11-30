@@ -5,7 +5,7 @@ import torch
 import random as rand
 import numpy as np
 import matplotlib.pyplot as plt
-from gymnasium import gym
+import gymnasium as gym
 
 # Add project root to the python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -16,8 +16,6 @@ from controller.fc import FC
 from controller.cpg_fc import CPG_FC
 from controller.rbfn_fc import RBFN_FC
 from controller.cpg_rbfn import CPG_RBFN
-
-from evolutionary.functions import mutate, norm_fitness_of_generation, roulette_wheel_selection, select_solutions_from_gen, resetFitness
 
 class NeuroEvolution():
     """Class for all the Neuro Evolutionary functions"""

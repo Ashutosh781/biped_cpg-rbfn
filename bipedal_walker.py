@@ -1,7 +1,7 @@
 import os
 import sys
 import types
-import gym
+import gymnasium as gym
 import numpy as np
 from torch import save, load, float32, tensor
 import matplotlib.pyplot as plt
