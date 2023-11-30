@@ -149,7 +149,9 @@ class NeuroEvolution():
 
         # Mutate all parameters
         if mutations == -1:
-            params *= np.random.normal(self.mean, self.std)
+            param_mutations = np.random.normal(self.mean, self.std, params.shape)
+            param_mutations = torch.from_numpy(param_mutations).float()
+            params = torch.mul(params, param_mutations)
 
         # Mutate a random number of parameters
         else:
