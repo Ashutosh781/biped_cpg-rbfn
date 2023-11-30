@@ -42,7 +42,7 @@ def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, ge
         neuro_evolution.env.close()
 
         # Get plots
-        neuro_evolution.get_plots(is_show=True)
+        neuro_evolution.get_plots(model_path, is_show=False)
 
         # Exit
         sys.exit()
@@ -73,7 +73,7 @@ def rl_pibb_train(env_type: str, epochs: int, max_steps: int, rollout_size: int,
         rl_pibb.env.close()
 
         # Get plots
-        rl_pibb.get_plots(is_show=True)
+        rl_pibb.get_plots(model_path, is_show=False)
 
         # Exit
         sys.exit()
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     max_steps = 1000
     gen_size = 10
     elite_size = 10
-    load_elite=True
+    load_elite = False
     mean = 1.0
     std = 0.001
 

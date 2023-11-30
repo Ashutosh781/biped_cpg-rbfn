@@ -173,17 +173,22 @@ class RlPibb():
         # Save reward and weight update history to csv
         with open(os.path.join(path, "reward_history.csv"), "w") as f:
             writer = csv.writer(f)
+            writer.writerow("Reward History")
             writer.writerow(self.reward_history)
+            writer.writerow("Best Reward per Epoch")
             writer.writerow(self.best_per_epoch)
+            writer.writerow("Mean Reward per Epoch")
             writer.writerow(self.mean_per_epoch)
+            writer.writerow("Mean Reward Error per Epoch")
             writer.writerow(self.mean_error_per_epoch)
+            writer.writerow("Weight Update History")
             writer.writerow(self.weight_update_history)
 
         # Save the model
         torch.save(self.agent.model.state_dict(), os.path.join(path, "model.pt"))
 
-    def get_plots(self, is_show: bool=False):
-        """Plot the reward history statistics"""
+    def get_plots(self, path: str, is_show: bool=False):
+        """Plot the reward history statistics and save the plots"""
 
         # Plot reward of every rollout agent in every epoch
         plt.figure("Reward History All")
@@ -192,6 +197,7 @@ class RlPibb():
         plt.ylabel("Reward")
         for i, rewards in enumerate(self.reward_history):
             plt.scatter([i] * len(rewards), rewards, s=1)
+        plt.savefig(os.path.join(path, "reward_history_all.png"))
 
         # Plot best reward of every epoch
         plt.figure("Best Reward")
@@ -199,6 +205,7 @@ class RlPibb():
         plt.xlabel("Epoch")
         plt.ylabel("Reward")
         plt.plot(self.best_per_epoch)
+        plt.savefig(os.path.join(path, "best_reward.png"))
 
         # Plot mean reward of every epoch with error bars
         plt.figure("Mean Reward")
@@ -207,6 +214,7 @@ class RlPibb():
         plt.ylabel("Reward")
         plt.plot(self.mean_per_epoch)
         plt.errorbar(np.arange(len(self.epochs)), self.mean_per_epoch, yerr=self.mean_error_per_epoch, fmt="none", ecolor="r")
+        plt.savefig(os.path.join(path, "mean_reward.png"))
 
         # Show plots
         if is_show:

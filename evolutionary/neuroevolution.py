@@ -84,7 +84,7 @@ class NeuroEvolution():
 
         #Load elite if this is the initial generation
         if self.load_elite and is_init:
-            
+
             print("Loading elites..")
 
             #Load files
@@ -233,17 +233,21 @@ class NeuroEvolution():
         # Save reward history to csv
         with open(os.path.join(path, "reward_history.csv"), "w") as f:
             writer = csv.writer(f)
+            writer.writerow("Reward History")
             writer.writerow(self.reward_history)
+            writer.writerow("Best Reward per Generation")
             writer.writerow(self.best_per_gen)
+            writer.writerow("Mean Reward per Generation")
             writer.writerow(self.mean_per_gen)
+            writer.writerow("Mean Reward Error per Generation")
             writer.writerow(self.mean_error_per_gen)
 
         # Save models of the last generation
         for i, indv in enumerate(self.generation):
             torch.save(indv.model.state_dict(), os.path.join(path, f"model{i}.pt"))
 
-    def get_plots(self, is_show: bool = False):
-        """Plot the reward history statistics"""
+    def get_plots(self, path:str, is_show: bool = False):
+        """Plot the reward history statistics and save the plots"""
 
         # Plot reward of every individual in every generation
         plt.figure("Reward History All")
@@ -252,6 +256,7 @@ class NeuroEvolution():
         plt.ylabel("Reward")
         for i, rewards in enumerate(self.reward_history):
             plt.scatter([i] * len(rewards), rewards, s=1)
+        plt.savefig(os.path.join(path, "reward_history_all.png"))
 
         # Plot best reward of every generation
         plt.figure("Best Reward")
@@ -259,6 +264,7 @@ class NeuroEvolution():
         plt.xlabel("Generation")
         plt.ylabel("Reward")
         plt.plot(self.best_per_gen)
+        plt.savefig(os.path.join(path, "best_reward.png"))
 
         # Plot mean reward of every generation with error bars
         plt.figure("Mean Reward")
@@ -267,6 +273,7 @@ class NeuroEvolution():
         plt.ylabel("Reward")
         plt.plot(self.mean_per_gen)
         plt.errorbar(np.arange(len(self.mean_per_gen)), self.mean_per_gen, yerr=self.mean_error_per_gen, fmt='none', ecolor='r')
+        plt.savefig(os.path.join(path, "mean_reward.png"))
 
         # Show plots
         if is_show:
