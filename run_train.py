@@ -10,7 +10,7 @@ from evolutionary.neuroevolution import NeuroEvolution
 from rl.rlpibb import RlPibb
 
 
-def neuro_evolution(model_type:str, env_type: str, generations: int, max_steps: int, gen_size: int, mean: float=1.0, std: float=0.001):
+def neuro_evolution_train(model_type:str, env_type: str, generations: int, max_steps: int, gen_size: int, mean: float=1.0, std: float=0.001):
     """Train a model using neuroevolution"""
 
     try:
@@ -45,8 +45,40 @@ def neuro_evolution(model_type:str, env_type: str, generations: int, max_steps: 
         # Exit
         sys.exit()
 
+def rl_pibb_train(env_type: str, epochs: int, max_steps: int, rollout_size: int, norm_constant: float, variance: float, decay:float):
+    """Train a model using RL-PIBB"""
+
+    try:
+        # Initialize RL-PIBB
+        rl_pibb = RlPibb(env_type, epochs, max_steps, rollout_size, norm_constant, variance, decay)
+
+        # Run RL-PIBB
+        print("Running RL-PIBB training...")
+        rl_pibb.run(verbose=True)
+
+    except KeyboardInterrupt:
+        print("TRAINING INTERRUPTED !!")
+
+        # Get path to save data
+        model_path = os.path.join(os.getcwd(), "data", "RL-PIBB")
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
+
+        # Save data
+        rl_pibb.save(model_path)
+
+        # Close environment
+        rl_pibb.env.close()
+
+        # Get plots
+        rl_pibb.get_plots(is_show=True)
+
+        # Exit
+        sys.exit()
+
 
 if __name__ == "__main__":
+
     #Gym environment
     env_type = "HalfCheetah-v4"
 
@@ -56,7 +88,6 @@ if __name__ == "__main__":
     # model_type = models.CPG_FC_MODEL
     # model_type = models.RBFN_FC_MODEL
     model_type = models.CPG_RBFN_MODEL
-    # model_type = models.RL_PIBB
 
     # NEUROEVOLUTION PARAMS
     generations = 500
@@ -66,4 +97,15 @@ if __name__ == "__main__":
     std = 0.001
 
     # Run neuroevolution
-    neuro_evolution(model_type, env_type, generations, max_steps, gen_size, mean, std)
+    neuro_evolution_train(model_type, env_type, generations, max_steps, gen_size, mean, std)
+
+    # RL-PIBB PARAMS
+    epochs = 1000
+    max_steps = 1000
+    rollout_size = 10
+    norm_constant = 10.0
+    variance = 1.0
+    decay = 0.99
+
+    # Run RL-PIBB
+    rl_pibb_train(env_type, epochs, max_steps, rollout_size, norm_constant, variance, decay)

@@ -78,6 +78,7 @@ class NeuroEvolution():
                     model = FC(self.in_size, self.fc_h1, self.fc_h2, self.out_size)
 
             generation.append(Individual(model))
+            # TODO: Need a flag in CPG-RBFN to have RBF centers fixed from formulae or learnable
 
         return generation
 
