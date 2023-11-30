@@ -78,8 +78,8 @@ class RlPibb():
             agent_param_noise = np.random.normal(0, self.variance, self.agent.model.get_params().shape)
             # Convert to tensor
             agent_param_noise_tensor = torch.from_numpy(agent_param_noise).float()
-            # Multiply noise with parameters
-            agent_params = torch.mul(self.agent.model.get_params(), agent_param_noise_tensor)
+            # Add noise to parameters
+            agent_params = torch.add(self.agent.model.get_params(), agent_param_noise_tensor)
             # Set the parameters of the agent
             agent.model.set_params(agent_params)
 
