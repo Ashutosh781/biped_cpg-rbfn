@@ -69,6 +69,7 @@ class NeuroEvolution():
         """Create a new generation"""
 
         generation = []
+        elite = []
 
         #Set model
         match self.model_type:
@@ -85,8 +86,6 @@ class NeuroEvolution():
         if self.load_elite and is_init:
             
             print("Loading elites..")
-
-            elite = []
 
             #Load files
             for i in range(self.elite_size):
