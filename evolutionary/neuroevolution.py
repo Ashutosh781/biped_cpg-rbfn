@@ -57,7 +57,7 @@ class NeuroEvolution():
         self.models = Models()
 
         # Initialize the generation
-        self.generation = self.get_gen()
+        self.generation = self.get_gen(is_init=True)
 
         # Reward history
         self.reward_history = []
@@ -65,7 +65,7 @@ class NeuroEvolution():
         self.mean_per_gen = []
         self.mean_error_per_gen = []
 
-    def get_gen(self):
+    def get_gen(self, is_init: bool=False):
         """Create a new generation"""
 
         generation = []
@@ -95,6 +95,10 @@ class NeuroEvolution():
 
         for _ in range(self.gen_size-len(elite)):
             generation.append(Individual(model))
+
+        # If initializing, then set load elite to false for next generation
+        if is_init:
+            self.load_elite = False
 
         return generation
 
