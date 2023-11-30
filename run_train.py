@@ -27,6 +27,21 @@ def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, ge
         print("Running Neuro evolution training...")
         neuro_evolution.run(verbose=True)
 
+        # Get path to save data
+        model_path = os.path.join(os.getcwd(), "data", model_type)
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
+
+        # Save results
+        print("TRAINING COMPLETED...")
+        neuro_evolution.save(model_path)
+
+        # Close environment
+        neuro_evolution.env.close()
+
+        # Get plots
+        neuro_evolution.get_plots(model_path, is_show=False)
+
     except KeyboardInterrupt:
         print("TRAINING INTERRUPTED !!")
 
@@ -57,6 +72,21 @@ def rl_pibb_train(env_type: str, epochs: int, max_steps: int, rollout_size: int,
         # Run RL-PIBB
         print("Running RL-PIBB training...")
         rl_pibb.run(verbose=True)
+
+        # Get path to save data
+        model_path = os.path.join(os.getcwd(), "data", "RL-PIBB")
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
+
+        # Save results
+        print("TRAINING COMPLETED...")
+        rl_pibb.save(model_path)
+
+        # Close environment
+        rl_pibb.env.close()
+
+        # Get plots
+        rl_pibb.get_plots(model_path, is_show=False)
 
     except KeyboardInterrupt:
         print("TRAINING INTERRUPTED !!")
