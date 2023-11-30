@@ -54,7 +54,7 @@ OUTPUT_UNITS = ENV.action_space.shape[0]
 REWARDS_GOAL = 1000
 GENERATIONS = 100
 GEN_SIZE = 10
-ELITE_SIZE = 5
+ELITE_SIZE = GEN_SIZE
 
 ##########-- NEUROEVOLUTION --##########
 
@@ -176,7 +176,7 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, elite_si
 
     except KeyboardInterrupt:
         for i in range(len(elite)):
-            save(elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
+            save(elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pt")
         print("Saved Models")
         print(best_per_gen)
         sys.exit()
@@ -202,11 +202,10 @@ def test_algorithm(best_nn:Individual, episodes:int=1000):
         match(MODEL_TYPE):
             case models.CPG_RBFN_MODEL | models.CPG_FC_MODEL:
                 action = best_nn.choose_action()
-            case models.FC_MODEL:
+            case models.FC_MODEL | models.RBFN_FC_MODEL:
                 x = np.array(state, dtype=np.float32)
                 x = tensor(x, dtype=float32)
                 action = best_nn.choose_action(x)
-        print(action)
 
         state, reward, terminated, _, _ = test_env.step(action)
 
@@ -236,25 +235,25 @@ match(MODEL_TYPE):
 
 # elite = []
 # for i in range(ELITE_SIZE):
-#     model.load_state_dict(load(f"{MODELS_PATH}/model{i}.pth"))
+#     model.load_state_dict(load(f"{MODELS_PATH}/model{i}.pt"))
 #     best_indv = Individual(model)
 #     best_indv.model = model
 #     elite.append(best_indv)
 # best_indv, new_elite, best_per_gen = neuro_evolution(gen_size=GEN_SIZE, generations=GENERATIONS, rewards_goal=REWARDS_GOAL, elite_size=ELITE_SIZE, elite=elite)
 # for i in range(len(new_elite)):
-#     save(new_elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
+#     save(new_elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pt")
 
 ## LOAD BEST SAVED MODEL ###
 
-model.load_state_dict(load(f"{MODELS_PATH}/model0.pth"))
-print(model.state_dict())
-best_indv = Individual(model)
-best_indv.model = model
-test_algorithm(best_nn=best_indv)
+# model.load_state_dict(load(f"{MODELS_PATH}/model0.pt"))
+# print(model.state_dict())
+# best_indv = Individual(model)
+# best_indv.model = model
+# test_algorithm(best_nn=best_indv)
 
 ### FIRST NEUROEVOLUTION RUN ###
 
-# best_indv, elite, best_per_gen = neuro_evolution(gen_size=GEN_SIZE, generations=GENERATIONS, rewards_goal=REWARDS_GOAL, elite_size=ELITE_SIZE)
-# for i in range(len(elite)):
-#             save(elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pth")
-# print(best_per_gen)
+best_indv, elite, best_per_gen = neuro_evolution(gen_size=GEN_SIZE, generations=GENERATIONS, rewards_goal=REWARDS_GOAL, elite_size=ELITE_SIZE)
+for i in range(len(elite)):
+            save(elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pt")
+print(best_per_gen)

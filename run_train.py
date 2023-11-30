@@ -34,7 +34,7 @@ def neuro_evolution_train(model_type:str, env_type: str, generations: int, max_s
             os.makedirs(model_path)
 
         # Save data
-        neuro_evolution.save_data(model_path)
+        neuro_evolution.save(model_path)
 
         # Close environment
         neuro_evolution.env.close()
@@ -90,9 +90,10 @@ if __name__ == "__main__":
     model_type = models.CPG_RBFN_MODEL
 
     # NEUROEVOLUTION PARAMS
-    generations = 500
+    generations = 100
     max_steps = 1000
     gen_size = 10
+    elite_size = 10
     mean = 1.0
     std = 0.001
 
