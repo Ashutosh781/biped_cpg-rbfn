@@ -69,7 +69,6 @@ class NeuroEvolution():
         """Create a new generation"""
 
         generation = []
-        elite = []
 
         #Set model
         match self.model_type:
@@ -82,8 +81,13 @@ class NeuroEvolution():
             case self.models.FC_MODEL:
                 model = FC(self.in_size, self.fc_h1, self.fc_h2, self.out_size)
 
-        if self.load_elite:
-            print("Loading Elite..")
+        #Load elite if this is the initial generation
+        if self.load_elite and is_init:
+            
+            print("Loading elites..")
+
+            elite = []
+
             #Load files
             for i in range(self.elite_size):
                 model.load_state_dict(torch.load(f"{self.elite_path}/model{i}.pt"))
@@ -93,12 +97,9 @@ class NeuroEvolution():
             for i in range(len(elite)):
                 generation.append(elite[i])
 
+        #Add new individuals
         for _ in range(self.gen_size-len(elite)):
             generation.append(Individual(model))
-
-        # If initializing, then set load elite to false for next generation
-        if is_init:
-            self.load_elite = False
 
         return generation
 
@@ -170,7 +171,7 @@ class NeuroEvolution():
     def copy_gen(self, generation: list[Individual]):
         """Copy the generation as deepcopy doesn't work"""
 
-        new_gen = self.get_gen()
+        new_gen = self.get_gen(is_init=False)
 
         for i, individual in enumerate(generation):
             new_gen[i].model.set_params(individual.model.get_params())
