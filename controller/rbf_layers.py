@@ -26,6 +26,9 @@ class RBF(nn.Module):
 
         # Initialize parameters
         nn.init.normal_(self.centres, -1, 1)
+    
+    def reset(self):
+        nn.init.normal_(self.centres, -1, 1)
 
     def forward(self, input):
         self.delayline[0].Write(input[0])

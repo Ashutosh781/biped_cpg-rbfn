@@ -38,7 +38,7 @@ MODEL_TYPE = models.CPG_RBFN_MODEL
 #MODEL_TYPE = models.RBFN_FC_MODEL
 
 #Folder to save models
-MODELS_PATH = f"{CWD}/sim/models/{MODEL_TYPE}"
+MODELS_PATH = f"{CWD}/models/{MODEL_TYPE}"
 
 #CPG-RBFN Parameters
 RBFN_UNITS = 20
@@ -85,6 +85,11 @@ def run_gen(generation, rewards_goal):
 
             if terminated or truncated:
                 break
+        
+        #Reset CPG
+        if MODEL_TYPE == models.CPG_RBFN_MODEL or MODEL_TYPE == models.CPG_FC_MODEL:
+            individual.model.cpg.reset()
+
 
 #Train through neuro evolution
 def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, elite_size: int, elite: list[Individual]=[]):
@@ -233,15 +238,15 @@ match(MODEL_TYPE):
 
 ### CONTINUE NEUROEVOLUTION RUN ###
 
-# elite = []
-# for i in range(ELITE_SIZE):
-#     model.load_state_dict(load(f"{MODELS_PATH}/model{i}.pt"))
-#     best_indv = Individual(model)
-#     best_indv.model = model
-#     elite.append(best_indv)
-# best_indv, new_elite, best_per_gen = neuro_evolution(gen_size=GEN_SIZE, generations=GENERATIONS, rewards_goal=REWARDS_GOAL, elite_size=ELITE_SIZE, elite=elite)
-# for i in range(len(new_elite)):
-#     save(new_elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pt")
+elite = []
+for i in range(ELITE_SIZE):
+    model.load_state_dict(load(f"{MODELS_PATH}/model{i}.pt"))
+    best_indv = Individual(model)
+    best_indv.model = model
+    elite.append(best_indv)
+best_indv, new_elite, best_per_gen = neuro_evolution(gen_size=GEN_SIZE, generations=GENERATIONS, rewards_goal=REWARDS_GOAL, elite_size=ELITE_SIZE, elite=elite)
+for i in range(len(new_elite)):
+    save(new_elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pt")
 
 ## LOAD BEST SAVED MODEL ###
 
@@ -252,8 +257,7 @@ match(MODEL_TYPE):
 # test_algorithm(best_nn=best_indv)
 
 ### FIRST NEUROEVOLUTION RUN ###
-
-best_indv, elite, best_per_gen = neuro_evolution(gen_size=GEN_SIZE, generations=GENERATIONS, rewards_goal=REWARDS_GOAL, elite_size=ELITE_SIZE)
-for i in range(len(elite)):
-            save(elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pt")
-print(best_per_gen)
+# best_indv, elite, best_per_gen = neuro_evolution(gen_size=GEN_SIZE, generations=GENERATIONS, rewards_goal=REWARDS_GOAL, elite_size=ELITE_SIZE)
+# for i in range(len(elite)):
+#             save(elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pt")
+# print(best_per_gen)

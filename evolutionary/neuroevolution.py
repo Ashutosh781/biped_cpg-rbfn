@@ -12,6 +12,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 # Import project modules
 from evolutionary.individual import Individual, Models
+from evolutionary.functions import norm_fitness_of_generation, roulette_wheel_selection
 from controller.fc import FC
 from controller.cpg_fc import CPG_FC
 from controller.rbfn_fc import RBFN_FC
@@ -56,6 +57,17 @@ class NeuroEvolution():
         # Define the models
         self.models = Models()
 
+        #Set template model
+        match self.model_type:
+            case self.models.CPG_RBFN_MODEL:
+                self.template_model = CPG_RBFN(self.rbfn_units, self.out_size)
+            case self.models.RBFN_FC_MODEL:
+                self.template_model = RBFN_FC(self.in_size, self.rbfn_units, self.out_size)
+            case self.models.CPG_FC_MODEL:
+                self.template_model = CPG_FC(self.fc_h1, self.fc_h2, self.out_size)
+            case self.models.FC_MODEL:
+                self.template_model = FC(self.in_size, self.fc_h1, self.fc_h2, self.out_size)
+
         # Initialize the generation
         self.generation = self.get_gen(is_init=True)
 
@@ -71,17 +83,6 @@ class NeuroEvolution():
         generation = []
         elite = []
 
-        #Set model
-        match self.model_type:
-            case self.models.CPG_RBFN_MODEL:
-                model = CPG_RBFN(self.rbfn_units, self.out_size)
-            case self.models.RBFN_FC_MODEL:
-                model = RBFN_FC(self.in_size, self.rbfn_units, self.out_size)
-            case self.models.CPG_FC_MODEL:
-                model = CPG_FC(self.fc_h1, self.fc_h2, self.out_size)
-            case self.models.FC_MODEL:
-                model = FC(self.in_size, self.fc_h1, self.fc_h2, self.out_size)
-
         #Load elite if this is the initial generation
         if self.load_elite and is_init:
 
@@ -89,8 +90,9 @@ class NeuroEvolution():
 
             #Load files
             for i in range(self.elite_size):
-                model.load_state_dict(torch.load(f"{self.elite_path}/model{i}.pt"))
-                elite.append(Individual(model))
+                self.template_model.reset()
+                self.template_model.load_state_dict(torch.load(f"{self.elite_path}/model{i}.pt"))
+                elite.append(Individual(self.template_model))
 
             # Add elite if any
             for i in range(len(elite)):
@@ -98,7 +100,8 @@ class NeuroEvolution():
 
         #Add new individuals
         for _ in range(self.gen_size-len(elite)):
-            generation.append(Individual(model))
+            self.template_model.reset()
+            generation.append(Individual(self.template_model))
 
         return generation
 
@@ -138,10 +141,6 @@ class NeuroEvolution():
             if self.model_type == self.models.CPG_FC_MODEL or self.model_type == self.models.CPG_RBFN_MODEL:
                 individual.model.cpg.reset()
 
-    def get_gen_fitness(self, generation: list[Individual]):
-        """Get the fitness of every Individual in generation"""
-
-        return [individual.fitness for individual in generation]
 
     def mutate(self, params: torch.tensor, mutations: int = -1):
         """Mutate the parameters of an Individual
@@ -153,21 +152,12 @@ class NeuroEvolution():
             param_mutations = torch.from_numpy(param_mutations).float()
             params = torch.mul(params, param_mutations)
 
-        # Mutate a random number of parameters
+        # Mutate a percentage of parameters
         else:
             for _ in range(mutations):
                 params[rand.randrange(len(params))] *= np.random.normal(self.mean, self.std)
 
         return params
-
-    def select_solutions_from_gen(self, generation: list[Individual], gen_size: int):
-        """Select new generation from the previous generation"""
-
-        # Sort the generation by fitness
-        generation.sort(key=lambda x: x.fitness, reverse=True)
-
-        # Select the top gen_size individuals
-        return generation[:gen_size]
 
     def copy_gen(self, generation: list[Individual]):
         """Copy the generation as deepcopy doesn't work"""
@@ -181,30 +171,41 @@ class NeuroEvolution():
 
     def run(self, verbose: bool = False):
         """Run the algorithm"""
-
-        # Run the initial generation
-        self.run_gen(self.generation)
-
-        # Get the fitness of the initial generation
-        self.reward_history.append(self.get_gen_fitness(self.generation))
-        self.best_per_gen.append(np.max(self.reward_history[-1]))
-        self.mean_per_gen.append(np.mean(self.reward_history[-1]))
-        self.mean_error_per_gen.append(np.std(self.reward_history[-1]) / np.sqrt(self.generations + 1))
-
         # Iterate generations
         for gen_count in range(self.generations):
 
+            # Run the initial generation
+            self.run_gen(self.generation)
+
+            #Get fitness of current generation
+            fitness_of_generation = norm_fitness_of_generation(self.generation)
+
+            #Breed gen_size children
+            children = []
+            for _ in range(0, self.gen_size):
+                # Select parents for breeding through roulette wheel selection
+                parent = self.generation[roulette_wheel_selection(fitness_of_generation)]
+
+                #Mutation
+                mutate_percent = 0.1
+                mutations = int(parent.model.dim * mutate_percent)
+
+                self.template_model.reset()
+                child = Individual(self.template_model)
+                child.model.set_params(self.mutate(parent.model.get_params(), mutations=mutations))
+
+                children.append(child)
+                
             # Get a copy of the generation
-            children = self.copy_gen(self.generation)
-
+            # children = self.copy_gen(self.generation)
             # Mutate the children
-            for child in children:
-                # Mutations = -1 means mutate all parameters, otherwise mutate a random number of parameters
-                # Here we mutate all parameters for all the parents to get the children
-                mutate_percent = 0.2
-                mutations = int(child.model.dim * mutate_percent)
+            # for child in children:
+            #     # Mutations = -1 means mutate all parameters, otherwise mutate a random number of parameters
+            #     # Here we mutate all parameters for all the parents to get the children
+            #     mutate_percent = 0.2
+            #     mutations = int(child.model.dim * mutate_percent)
 
-                child.model.set_params(self.mutate(child.model.get_params(), mutations=mutations))
+            #     child.model.set_params(self.mutate(child.model.get_params(), mutations=mutations))
 
             # Run the children
             self.run_gen(children)
@@ -213,13 +214,18 @@ class NeuroEvolution():
             self.generation.extend(children)
 
             # Select the best solutions up to gen_size
-            self.generation = self.select_solutions_from_gen(self.generation, self.gen_size)
+            self.generation.sort(key=lambda x: x.fitness, reverse=True)
+            self.generation = self.generation[:self.gen_size]
 
             # Add fitness statistics
-            self.reward_history.append(self.get_gen_fitness(self.generation))
+            self.reward_history.append([individual.fitness for individual in self.generation])
             self.best_per_gen.append(np.max(self.reward_history[-1]))
             self.mean_per_gen.append(np.mean(self.reward_history[-1]))
             self.mean_error_per_gen.append(np.std(self.reward_history[-1]) / np.sqrt(self.generations + 1))
+
+            #Reset fitness
+            for i in self.generation:
+                i.fitness = 0
 
             # Print progress if verbose
             if verbose:
