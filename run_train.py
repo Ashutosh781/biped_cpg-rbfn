@@ -136,12 +136,12 @@ if __name__ == "__main__":
                           gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=load_elite)
 
     # RL-PIBB PARAMS
-    epochs = 1000
+    epochs = 500
     max_steps = 1000
     rollout_size = 10
     norm_constant = 10.0
-    variance = 1.0
-    decay = 0.99
+    variance = 0.05
+    decay = 0.995
 
     # Run RL-PIBB
     rl_pibb_train(env_type, epochs, max_steps, rollout_size, norm_constant, variance, decay)

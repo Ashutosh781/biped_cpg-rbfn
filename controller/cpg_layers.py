@@ -69,11 +69,11 @@ class CPG(nn.Module):
 
             if np.isclose(cpg_output[0], self.max_value, 0.001):
                 add_to_signal = True
-            
+
             if add_to_signal and len(self.signal_1_one_period) <= self.period:
                 self.signal_1_one_period.append(cpg_output[0])
                 self.signal_2_one_period.append(cpg_output[1])
-            
+
             self.step()
 
 

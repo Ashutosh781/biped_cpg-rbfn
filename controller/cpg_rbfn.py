@@ -35,7 +35,7 @@ class CPG_RBFN(nn.Module):
       self.dim = (self.rbf_kernels * self.out_size)
 
     self.params = zeros(self.dim)
-  
+
   def reset(self):
     self.rbfn.reset()
     self.out.reset()
@@ -47,8 +47,8 @@ class CPG_RBFN(nn.Module):
     centers_2 = []
 
     for i in range(self.rbf_kernels):
-      centers_1.append(self.cpg.signal_1_one_period[int(centers[i])]) 
-      centers_2.append(self.cpg.signal_2_one_period[int(centers[i])]) 
+      centers_1.append(self.cpg.signal_1_one_period[int(centers[i])])
+      centers_2.append(self.cpg.signal_2_one_period[int(centers[i])])
 
     centers = np.column_stack((centers_1, centers_2))
     self.rbfn.centres = nn.Parameter(from_numpy(centers))

@@ -195,7 +195,7 @@ class NeuroEvolution():
                 child.model.set_params(self.mutate(parent.model.get_params(), mutations=mutations))
 
                 children.append(child)
-                
+
             # Get a copy of the generation
             # children = self.copy_gen(self.generation)
             # Mutate the children

@@ -85,7 +85,7 @@ def run_gen(generation, rewards_goal):
 
             if terminated or truncated:
                 break
-        
+
         #Reset CPG
         if MODEL_TYPE == models.CPG_RBFN_MODEL or MODEL_TYPE == models.CPG_FC_MODEL:
             individual.model.cpg.reset()

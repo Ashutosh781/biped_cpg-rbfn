@@ -13,7 +13,7 @@ class MotorLayer(nn.Module):
         self.weight = nn.Parameter(Tensor(out_features, in_features))
 
         nn.init.normal_(self.weight, -1, 1)
-    
+
     def reset(self):
         nn.init.normal_(self.weight, -1, 1)
 
