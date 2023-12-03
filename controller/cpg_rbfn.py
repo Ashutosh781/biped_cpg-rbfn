@@ -15,7 +15,7 @@ from controller.motor_layers import MotorLayer
 class CPG_RBFN(nn.Module):
   """CPG-RBFN network for controlling the robot"""
 
-  def __init__(self, rbf_size, out_size, fixed_centers=False, alt_cpgs=False):
+  def __init__(self, rbf_size, out_size, fixed_centers: bool=False, alt_cpgs: bool=False, test_case: int=1):
     super(CPG_RBFN, self).__init__()
     self.in_size = 2
     self.rbf_kernels = rbf_size
@@ -27,7 +27,7 @@ class CPG_RBFN(nn.Module):
       self.test_num = np.random.randint(1,4)
       self.cpg = CPG(test_num=self.test_num)
     else:
-      self.cpg = CPG()
+      self.cpg = CPG(test_num=test_case)
 
     self.rbfn = RBF(self.in_size, self.rbf_kernels, self.cpg.period)
 

@@ -26,10 +26,12 @@ class RlPibb():
         rollout_size (int): Number of rollouts per epoch
         variance (float): Variance of the Gaussian noise for exploration of weights
         decay (float): Decay rate of the variance
+        alt_cpgs (bool): Use alternating CPGs
+        test_case (int): Test case number for CPGs
     """
 
     def __init__(self, env_type: str, epochs: int=1000, max_steps: int=1000, rollout_size: int=10,
-                 norm_constant: float=10.0, variance: float=1.0, decay:float=0.99):
+                 norm_constant: float=10.0, variance: float=1.0, decay:float=0.99, alt_cpgs: bool=False, test_case: int=1):
         """Initialize parameters for RL-PIBB agent"""
 
         # Arguments
@@ -53,7 +55,7 @@ class RlPibb():
 
         # Initialize model and agent
         # Centres of RBF are fixed calculated from formula
-        self.model = CPG_RBFN(self.rbfn_units, self.out_size, fixed_centers=True)
+        self.model = CPG_RBFN(self.rbfn_units, self.out_size, fixed_centers=True, alt_cpgs=alt_cpgs, test_case=test_case)
         self.agent = Individual(self.model)
 
         # Reward history
