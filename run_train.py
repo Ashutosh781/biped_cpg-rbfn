@@ -21,7 +21,7 @@ def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, ge
 
         # Initialize neuroevolution
         neuro_evolution = NeuroEvolution(model_type=model_type, env_type=env_type, fixed_centres=fixed_centres, generations=generations, max_steps=max_steps,
-                                         gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=load_elite)
+                                         gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=load_elite, alt_cpgs=alt_cpgs)
 
         # Run neuroevolution
         print("Running Neuro evolution training...")
@@ -46,13 +46,18 @@ def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, ge
         print("TRAINING INTERRUPTED !!")
 
         # Get path to save data
-        model_path = os.path.join(os.getcwd(), "data", model_type)
+        model_path = os.path.join(os.getcwd(), "data", model_type, "not fixed")
         if not os.path.exists(model_path):
             os.makedirs(model_path)
         
         #Set new path to save files if fixed centers are selected
         if fixed_centres:
-            model_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", model_type, "fixed")
+            model_path = os.path.join(os.getcwd(), "data", model_type, "fixed")
+            if not os.path.exists(model_path):
+                os.makedirs(model_path)
+        
+        if alt_cpgs:
+            model_path = os.path.join(os.getcwd(), "data", model_type, "alt_cpgs")
             if not os.path.exists(model_path):
                 os.makedirs(model_path)
 
@@ -128,9 +133,9 @@ if __name__ == "__main__":
     model_type = models.CPG_RBFN_MODEL
 
     # NEUROEVOLUTION PARAMS
-    fixed_centres = False
+    fixed_centres = True
     load_elite = False
-    alt_cpgs = True
+    alt_cpgs = False
     generations = 1000
     max_steps = 1000
     gen_size = 10
@@ -140,7 +145,7 @@ if __name__ == "__main__":
 
     # Run neuroevolution
     neuro_evolution_train(model_type=model_type, env_type=env_type, fixed_centres=fixed_centres, generations=generations, max_steps=max_steps,
-                          gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=load_elite)
+                          gen_size=gen_size, mean=mean, alt_cpgs=alt_cpgs, std=std, elite_size=elite_size, load_elite=load_elite)
 
     # RL-PIBB PARAMS
     epochs = 500

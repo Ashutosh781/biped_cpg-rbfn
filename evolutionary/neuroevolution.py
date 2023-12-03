@@ -39,11 +39,14 @@ class NeuroEvolution():
         self.std = std
 
         # Path for saving/loading elite
-        self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", model_type)
+        self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", model_type, "not fixed")
 
         #Set new path to load files from if fixed centers are selected
         if self.fixed_centres:
             self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", model_type, "fixed")
+        
+        if self.alt_cpgs:
+            self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", model_type, "alt_cpgs")
 
         # Create the environment
         self.env = gym.make(self.env_type)

@@ -20,10 +20,12 @@ class CPG_RBFN(nn.Module):
     self.in_size = 2
     self.rbf_kernels = rbf_size
     self.out_size = out_size
+    self.test_num = 1
 
     #Set alternating CPG
     if alt_cpgs:
-      self.cpg = CPG(test_num=np.random.randint(1,4))
+      self.test_num = np.random.randint(1,4)
+      self.cpg = CPG(test_num=self.test_num)
     else:
       self.cpg = CPG()
 
@@ -45,14 +47,21 @@ class CPG_RBFN(nn.Module):
     self.out.reset()
 
   def calculate_centers(self):
-    centers = np.linspace(1, self.cpg.period, self.rbf_kernels)
+    # centers = np.linspace(1, self.cpg.period, self.rbf_kernels)
 
-    centers_1 = []
-    centers_2 = []
+    # centers_1 = []
+    # centers_2 = []
 
-    for i in range(self.rbf_kernels):
-      centers_1.append(self.cpg.signal_1_one_period[int(centers[i])])
-      centers_2.append(self.cpg.signal_2_one_period[int(centers[i])])
+    # for i in range(self.rbf_kernels):
+    #   centers_1.append(self.cpg.signal_1_one_period[int(centers[i])])
+    #   centers_2.append(self.cpg.signal_2_one_period[int(centers[i])])
+    
+    # print(f"Centers 1: {centers_1}")
+    # print(f"Centers 2: {centers_2}")
+
+    #Fixed centers
+    centers_1 =  [0.6362034868378307, 0.6056403566026877, 0.4979740682026714, 0.34278407182568793, 0.2518986861411785, 0.047582298836436485, -0.18497567644460014, -0.4208777666940527, -0.5189773961920616, -0.6333793133810519, -0.6366744959633248, -0.5599629721546054, -0.4994623530128837, -0.34471522862146653, -0.15574149978948404, 0.06309760181748794, 0.18228092859889855, 0.4184656839308781, 0.5898769526814864, 0.6470831148579375]
+    centers_2 = [-0.009429322716789812, -0.126091052986264, -0.366151504623559, -0.5595098201634598, -0.6164959592472207, -0.6444954068298554, -0.5845964621957886, -0.4638175755027142, -0.3861018362300865, -0.2047054462852167, 0.006908954005284393, 0.24434699815917255, 0.36358723244028845, 0.5579006565210938, 0.6434105936053639, 0.6241561574364519, 0.585633816717373, 0.4654296411586814, 0.3013419928663006, 0.10499597417593949]
 
     centers = np.column_stack((centers_1, centers_2))
     self.rbfn.centres = nn.Parameter(from_numpy(centers))
