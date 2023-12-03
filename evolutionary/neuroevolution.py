@@ -70,7 +70,7 @@ class NeuroEvolution():
         self.best_per_gen = []
         self.mean_per_gen = []
         self.mean_error_per_gen = []
-    
+
     def get_model(self):
         #Get model
         model = None

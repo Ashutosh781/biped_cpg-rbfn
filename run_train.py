@@ -49,7 +49,7 @@ def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, ge
         model_path = os.path.join(os.getcwd(), "data", model_type)
         if not os.path.exists(model_path):
             os.makedirs(model_path)
-        
+
         #Set new path to save files if fixed centers are selected
         if fixed_centres:
             model_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", model_type, "fixed")
@@ -68,12 +68,13 @@ def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, ge
         # Exit
         sys.exit()
 
-def rl_pibb_train(env_type: str, epochs: int, max_steps: int, rollout_size: int, norm_constant: float, variance: float, decay:float):
+def rl_pibb_train(env_type: str, epochs: int, max_steps: int, rollout_size: int, norm_constant: float,
+                  variance: float, decay:float, alt_cpgs: bool, test_case: int):
     """Train a model using RL-PIBB"""
 
     try:
         # Initialize RL-PIBB
-        rl_pibb = RlPibb(env_type, epochs, max_steps, rollout_size, norm_constant, variance, decay)
+        rl_pibb = RlPibb(env_type, epochs, max_steps, rollout_size, norm_constant, variance, decay, alt_cpgs, test_case)
 
         # Run RL-PIBB
         print("Running RL-PIBB training...")
@@ -149,6 +150,8 @@ if __name__ == "__main__":
     norm_constant = 10.0
     variance = 0.05
     decay = 0.995
+    alt_cpgs = False
+    test_case = 2
 
     # Run RL-PIBB
-    rl_pibb_train(env_type, epochs, max_steps, rollout_size, norm_constant, variance, decay)
+    rl_pibb_train(env_type, epochs, max_steps, rollout_size, norm_constant, variance, decay, alt_cpgs, test_case)
