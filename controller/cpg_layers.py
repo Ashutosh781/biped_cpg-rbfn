@@ -12,28 +12,29 @@ from utils.ann_lib import postProcessing
 class CPG(nn.Module):
     """Central Pattern Generator network for controlling the robot"""
 
-    def __init__(self):
+    def __init__(self, test_num: int=1):
         super(CPG, self).__init__()
 
         #Parameters in paper
         # self.alpha = 1.01
         # self.phi = 0.01*np.pi
 
-        #Test 1
-        self.alpha = 1.1
-        self.phi = 0.06*np.pi
-        self.period = 34
-
-        #Test 2
-        # self.alpha = 1.1
-        # self.phi = 0.08*np.pi
-        # self.period = 25
-
-        #Test 3
-        # self.alpha = 1.1
-        # self.phi = 0.1*np.pi
-        # self.period = 20
-        
+        match(test_num):
+            case 1:
+                #Test 1
+                self.alpha = 1.1
+                self.phi = 0.06*np.pi
+                self.period = 34
+            case 2:
+                #Test 2
+                self.alpha = 1.1
+                self.phi = 0.08*np.pi
+                self.period = 25
+            case 3:
+                # Test 3
+                self.alpha = 1.1
+                self.phi = 0.1*np.pi
+                self.period = 20
 
         self.weights = np.array([[self.alpha * np.cos(self.phi), self.alpha * np.sin(self.phi)],[-self.alpha * np.sin(self.phi), self.alpha * np.cos(self.phi)]])
         self.tau = 300

@@ -52,7 +52,7 @@ OUTPUT_UNITS = ENV.action_space.shape[0]
 
 ### NEUROEVOLUTION PARAMS ###
 REWARDS_GOAL = 1000
-GENERATIONS = 100
+GENERATIONS = 1000
 GEN_SIZE = 10
 ELITE_SIZE = GEN_SIZE
 
@@ -138,7 +138,7 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, elite_si
                 parent = generation[roulette_wheel_selection(fitness_of_generation)]
 
                 #Mutation
-                mutate_percent = 0.1
+                mutate_percent = 0.2
                 mutations = int(parent.model.dim * mutate_percent)
 
                 model = None
@@ -175,9 +175,9 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, elite_si
 
             #Reset generation's fitness
             resetFitness(generation)
-            if MODEL_TYPE == models.CPG_RBFN_MODEL or MODEL_TYPE == models.CPG_FC_MODEL:
-                for i in generation:
-                    i.model.cpg.reset()
+            # if MODEL_TYPE == models.CPG_RBFN_MODEL or MODEL_TYPE == models.CPG_FC_MODEL:
+            #     for i in generation:
+            #         i.model.cpg.reset()
 
     except KeyboardInterrupt:
         for i in range(len(elite)):

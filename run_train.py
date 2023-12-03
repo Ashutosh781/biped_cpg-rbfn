@@ -11,7 +11,7 @@ from rl.rlpibb import RlPibb
 
 
 def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, generations: int, max_steps: int, gen_size: int,
-                          elite_size: int, load_elite: bool=False, mean: float=1.0, std: float=0.001):
+                          elite_size: int, load_elite: bool=False, alt_cpgs: bool=False, mean: float=1.0, std: float=0.001):
     """Train a model using neuroevolution"""
 
     try:
@@ -49,6 +49,12 @@ def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, ge
         model_path = os.path.join(os.getcwd(), "data", model_type)
         if not os.path.exists(model_path):
             os.makedirs(model_path)
+        
+        #Set new path to save files if fixed centers are selected
+        if fixed_centres:
+            model_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", model_type, "fixed")
+            if not os.path.exists(model_path):
+                os.makedirs(model_path)
 
         # Save data
         neuro_evolution.save(model_path)
@@ -123,13 +129,14 @@ if __name__ == "__main__":
 
     # NEUROEVOLUTION PARAMS
     fixed_centres = False
-    generations = 100
+    load_elite = False
+    alt_cpgs = True
+    generations = 1000
     max_steps = 1000
     gen_size = 10
     elite_size = 10
-    load_elite = False
-    mean = 1.0
-    std = 0.001
+    mean = 0.0
+    std = 0.02
 
     # Run neuroevolution
     neuro_evolution_train(model_type=model_type, env_type=env_type, fixed_centres=fixed_centres, generations=generations, max_steps=max_steps,

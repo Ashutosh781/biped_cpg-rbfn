@@ -54,5 +54,5 @@ def resetFitness(generation: list[Individual]):
 #Mutation operator
 def mutate(params: tensor, mutations: int = 1):
     for _ in range(mutations):
-        params[rand.randrange(len(params))] += np.random.normal(1, 0.01)
+        params[rand.randrange(len(params))] += np.random.normal(0.0, 0.02)
     return params

@@ -22,13 +22,14 @@ class NeuroEvolution():
     """Class for all the Neuro Evolutionary functions"""
 
     def __init__(self, model_type: str, env_type: str, fixed_centres: bool=False, generations: int=100, max_steps: int=1000,
-                 gen_size: int=10, elite_size: int=10, load_elite: bool=False, mean: float=1.0, std: float=0.001):
+                 gen_size: int=10, elite_size: int=10, load_elite: bool=False, alt_cpgs: bool=False, mean: float=1.0, std: float=0.001):
         """Initialize the Neuro Evolutionary parameters"""
 
         # Arguments
         self.model_type = model_type
         self.env_type = env_type
         self.fixed_centres = fixed_centres
+        self.alt_cpgs = alt_cpgs
         self.generations = generations
         self.max_steps = max_steps
         self.gen_size = gen_size
@@ -39,6 +40,10 @@ class NeuroEvolution():
 
         # Path for saving/loading elite
         self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", model_type)
+
+        #Set new path to load files from if fixed centers are selected
+        if self.fixed_centres:
+            self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", model_type, "fixed")
 
         # Create the environment
         self.env = gym.make(self.env_type)
@@ -57,17 +62,6 @@ class NeuroEvolution():
         # Define the models
         self.models = Models()
 
-        #Set template model
-        match self.model_type:
-            case self.models.CPG_RBFN_MODEL:
-                self.template_model = CPG_RBFN(self.rbfn_units, self.out_size)
-            case self.models.RBFN_FC_MODEL:
-                self.template_model = RBFN_FC(self.in_size, self.rbfn_units, self.out_size)
-            case self.models.CPG_FC_MODEL:
-                self.template_model = CPG_FC(self.fc_h1, self.fc_h2, self.out_size)
-            case self.models.FC_MODEL:
-                self.template_model = FC(self.in_size, self.fc_h1, self.fc_h2, self.out_size)
-
         # Initialize the generation
         self.generation = self.get_gen(is_init=True)
 
@@ -76,6 +70,21 @@ class NeuroEvolution():
         self.best_per_gen = []
         self.mean_per_gen = []
         self.mean_error_per_gen = []
+    
+    def get_model(self):
+        #Get model
+        model = None
+        match self.model_type:
+            case self.models.CPG_RBFN_MODEL:
+                model = CPG_RBFN(self.rbfn_units, self.out_size, self.fixed_centres, self.alt_cpgs)
+            case self.models.RBFN_FC_MODEL:
+                model = RBFN_FC(self.in_size, self.rbfn_units, self.out_size)
+            case self.models.CPG_FC_MODEL:
+                model = CPG_FC(self.fc_h1, self.fc_h2, self.out_size)
+            case self.models.FC_MODEL:
+                model = FC(self.in_size, self.fc_h1, self.fc_h2, self.out_size)
+        return model
+
 
     def get_gen(self, is_init: bool=False):
         """Create a new generation"""
@@ -90,9 +99,9 @@ class NeuroEvolution():
 
             #Load files
             for i in range(self.elite_size):
-                self.template_model.reset()
-                self.template_model.load_state_dict(torch.load(f"{self.elite_path}/model{i}.pt"))
-                elite.append(Individual(self.template_model))
+                model = self.get_model()
+                model.load_state_dict(torch.load(f"{self.elite_path}/model{i}.pt"))
+                elite.append(Individual(model))
 
             # Add elite if any
             for i in range(len(elite)):
@@ -100,8 +109,8 @@ class NeuroEvolution():
 
         #Add new individuals
         for _ in range(self.gen_size-len(elite)):
-            self.template_model.reset()
-            generation.append(Individual(self.template_model))
+            #Set model
+            generation.append(Individual(self.get_model()))
 
         return generation
 
@@ -155,19 +164,9 @@ class NeuroEvolution():
         # Mutate a percentage of parameters
         else:
             for _ in range(mutations):
-                params[rand.randrange(len(params))] *= np.random.normal(self.mean, self.std)
+                params[rand.randrange(len(params))] += np.random.normal(self.mean, self.std)
 
         return params
-
-    def copy_gen(self, generation: list[Individual]):
-        """Copy the generation as deepcopy doesn't work"""
-
-        new_gen = self.get_gen(is_init=False)
-
-        for i, individual in enumerate(generation):
-            new_gen[i].model.set_params(individual.model.get_params())
-
-        return new_gen
 
     def run(self, verbose: bool = False):
         """Run the algorithm"""
@@ -187,25 +186,13 @@ class NeuroEvolution():
                 parent = self.generation[roulette_wheel_selection(fitness_of_generation)]
 
                 #Mutation
-                mutate_percent = 0.1
+                mutate_percent = 0.2
                 mutations = int(parent.model.dim * mutate_percent)
 
-                self.template_model.reset()
-                child = Individual(self.template_model)
+                child = Individual(self.get_model())
                 child.model.set_params(self.mutate(parent.model.get_params(), mutations=mutations))
 
                 children.append(child)
-
-            # Get a copy of the generation
-            # children = self.copy_gen(self.generation)
-            # Mutate the children
-            # for child in children:
-            #     # Mutations = -1 means mutate all parameters, otherwise mutate a random number of parameters
-            #     # Here we mutate all parameters for all the parents to get the children
-            #     mutate_percent = 0.2
-            #     mutations = int(child.model.dim * mutate_percent)
-
-            #     child.model.set_params(self.mutate(child.model.get_params(), mutations=mutations))
 
             # Run the children
             self.run_gen(children)
