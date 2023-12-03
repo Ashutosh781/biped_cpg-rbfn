@@ -14,17 +14,26 @@ class CPG(nn.Module):
 
     def __init__(self):
         super(CPG, self).__init__()
+
+        #Parameters in paper
         # self.alpha = 1.01
         # self.phi = 0.01*np.pi
+
         #Test 1
         self.alpha = 1.1
         self.phi = 0.06*np.pi
+        self.period = 34
+
         #Test 2
-        # self.alpha = 1.25
-        # self.phi = 0.1*np.pi
+        # self.alpha = 1.1
+        # self.phi = 0.08*np.pi
+        # self.period = 25
+
         #Test 3
-        # self.alpha = 1.5
-        # self.phi = 0.2*np.pi
+        # self.alpha = 1.1
+        # self.phi = 0.1*np.pi
+        # self.period = 20
+        
 
         self.weights = np.array([[self.alpha * np.cos(self.phi), self.alpha * np.sin(self.phi)],[-self.alpha * np.sin(self.phi), self.alpha * np.cos(self.phi)]])
         self.tau = 300
@@ -46,7 +55,7 @@ class CPG(nn.Module):
         self.max_value = self.signal_1.max()
         self.min_value = self.signal_1.min()
 
-        self.get_signal()
+        self.get_one_period()
 
     def update_weights(self):
         self.weights = np.array([[self.alpha * np.cos(self.phi), self.alpha * np.sin(self.phi)],[-self.alpha * np.sin(self.phi), self.alpha * np.cos(self.phi)]])
@@ -60,35 +69,41 @@ class CPG(nn.Module):
     def get_output(self):
         return self.activations
 
-    def get_signal(self):
+    def get_one_period(self):
         self.signal_1_one_period = []
         self.signal_2_one_period = []
         add_to_signal = False
+
         for _ in range(self.tau):
             cpg_output = self.get_output()
-
+            
+            #Once we find a max value start capturing period
             if np.isclose(cpg_output[0], self.max_value, 0.001):
                 add_to_signal = True
-
+            
+            #Capture period until we have captured period size samples
             if add_to_signal and len(self.signal_1_one_period) <= self.period:
                 self.signal_1_one_period.append(cpg_output[0])
                 self.signal_2_one_period.append(cpg_output[1])
-
+            
+            #Finish when we have captured one period
+            if(len(self.signal_1_one_period) == self.period+1):
+                break
+            
             self.step()
-
 
     def reset(self):
         #Set activations
         self.activations = np.array((0.2, 0))
 
         #Initialize CPG
-        cpg_period_postprocessor = postProcessing()
+        # cpg_period_postprocessor = postProcessing()
         randNum = np.random.randint(0,high=self.tau) % self.tau + 1
 
         for _ in range(self.tau+randNum):
-            cpg_output = self.get_output()
-            cpg_period_postprocessor.calculateAmplitude(cpg_output[0], cpg_output[1])
-            self.period = cpg_period_postprocessor.getPeriod()
+            # cpg_output = self.get_output()
+            # cpg_period_postprocessor.calculateAmplitude(cpg_output[0], cpg_output[1])
+            # self.period = cpg_period_postprocessor.getPeriod()
             self.step()
 
 # x=[[ 0.6332, -0.0246],
@@ -120,8 +135,8 @@ class CPG(nn.Module):
 # print(cpg.max_value)
 # print(cpg.min_value)
 # print(cpg.period)
-# plt.scatter(time, c1)
-# plt.scatter(time, c2)
+# # plt.scatter(time, c1)
+# # plt.scatter(time, c2)
 # # plt.plot(cpg.signal_1)
 # # plt.plot(cpg.signal_2)
 # plt.plot(cpg.signal_1_one_period)
