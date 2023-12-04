@@ -55,6 +55,11 @@ def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, ge
             model_path = os.path.join(os.getcwd(), "data", env_type, model_type, "fixed")
             if not os.path.exists(model_path):
                 os.makedirs(model_path)
+        
+        elif alt_cpgs and add_noise:
+            model_path = os.path.join(os.getcwd(), "data", env_type, model_type, "noisy_alt_cpgs")
+            if not os.path.exists(model_path):
+                os.makedirs(model_path)
 
         elif alt_cpgs:
             model_path = os.path.join(os.getcwd(), "data", env_type, model_type, "alt_cpgs")
@@ -141,12 +146,12 @@ if __name__ == "__main__":
 
     # NEUROEVOLUTION PARAMS
     fixed_centres = False
-    load_elite = True
-    alt_cpgs = False
-    add_noise = False
+    load_elite = False
+    alt_cpgs = True
+    add_noise = True
     generations = 10000
     max_steps = 1000
-    gen_size = 20
+    gen_size = 10
     elite_size = 10
     mean = 0.0
     std = 0.01
