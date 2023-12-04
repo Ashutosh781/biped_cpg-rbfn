@@ -129,8 +129,8 @@ def rl_pibb_train(env_type: str, epochs: int, max_steps: int, rollout_size: int,
 if __name__ == "__main__":
 
     #Gym environment
-    # env_type = "HalfCheetah-v4"
-    env_type = "Walker2d-v4"
+    env_type = "HalfCheetah-v4"
+    # env_type = "Walker2d-v4"
 
     ## MODEL TYPE
     models = Models()
