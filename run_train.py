@@ -91,7 +91,7 @@ def rl_pibb_train(env_type: str, epochs: int, max_steps: int, rollout_size: int,
         rl_pibb.run(verbose=True)
 
         # Get path to save data
-        model_path = os.path.join(os.getcwd(), "data", "RL-PIBB", f"set_{test_case}_noise{int(add_noise)}")
+        model_path = os.path.join(os.getcwd(), "data", "RL-PIBB", f"set_{test_case}_alt{int(alt_cpgs)}_noise{int(add_noise)}")
         if not os.path.exists(model_path):
             os.makedirs(model_path)
 
@@ -109,7 +109,7 @@ def rl_pibb_train(env_type: str, epochs: int, max_steps: int, rollout_size: int,
         print("TRAINING INTERRUPTED !!")
 
         # Get path to save data
-        model_path = os.path.join(os.getcwd(), "data", "RL-PIBB", f"set_{test_case}_noise{int(add_noise)}")
+        model_path = os.path.join(os.getcwd(), "data", "RL-PIBB", f"set_{test_case}_alt{int(alt_cpgs)}_noise{int(add_noise)}")
         if not os.path.exists(model_path):
             os.makedirs(model_path)
 
@@ -164,12 +164,13 @@ if __name__ == "__main__":
     decay = 0.995
     test_case = 1
     alt_cpgs = False
-    add_noise = False
+    add_noise = True
 
     # Read alt_cpgs from command line
     if len(sys.argv) > 1:
         alt_cpgs = bool(sys.argv[1])
     print(f"Alt CPGs: {alt_cpgs}")
+    print(f"Add noise: {add_noise}")
 
     # Run RL-PIBB
-    rl_pibb_train(env_type, epochs, max_steps, rollout_size, norm_constant, variance, decay, alt_cpgs, test_case)
+    rl_pibb_train(env_type, epochs, max_steps, rollout_size, norm_constant, variance, decay, alt_cpgs, add_noise, test_case)

@@ -91,7 +91,7 @@ class CPG(nn.Module):
             output[1] = self.activations[1] + np.random.normal(0.0, 0.05)
 
         return output
-    
+
     def get_noisy_periods(self):
         signal_1_one_period_noisy = np.array(self.signal_1_one_period[:]) + np.random.normal(0.0, 0.05, len(self.signal_1_one_period))
         signal_2_one_period_noisy = np.array(self.signal_2_one_period[:]) + np.random.normal(0.0, 0.05, len(self.signal_1_one_period))
@@ -164,7 +164,7 @@ class CPG(nn.Module):
 # time = np.arange(0, len(c1), dtype=int)
 
 # cpg = CPG()
-# noisy_signal_1, noisy_signal_2 = cpg.get_noisy_periods() 
+# noisy_signal_1, noisy_signal_2 = cpg.get_noisy_periods()
 # print(cpg.max_value)
 # print(cpg.min_value)
 # print(cpg.period)
