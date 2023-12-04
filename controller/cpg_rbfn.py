@@ -21,13 +21,14 @@ class CPG_RBFN(nn.Module):
     self.rbf_kernels = rbf_size
     self.out_size = out_size
     self.test_num = 1
+    self.add_noise = add_noise
 
     #Set alternating CPG
     if alt_cpgs:
       self.test_num = np.random.randint(1,4)
       self.cpg = CPG(test_num=self.test_num, add_noise=add_noise)
     else:
-      self.cpg = CPG(test_num=test_case, add_noise=add_noise)
+      self.cpg = CPG(add_noise=add_noise)
 
     self.rbfn = RBF(self.in_size, self.rbf_kernels, self.cpg.period)
 
@@ -67,7 +68,7 @@ class CPG_RBFN(nn.Module):
     self.rbfn.centres = nn.Parameter(from_numpy(centers))
 
   def forward(self):
-    z = from_numpy(self.cpg.get_output()).float()
+    z = from_numpy(self.cpg.get_output(ignore_noise=(not self.add_noise))).float()
     z = self.rbfn(z)
     z = tanh(self.out(z))
     self.cpg.step()

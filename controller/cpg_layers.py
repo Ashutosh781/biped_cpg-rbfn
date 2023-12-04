@@ -83,12 +83,19 @@ class CPG(nn.Module):
         self.activations[0] = next_a1
         self.activations[1] = next_a2
 
-    def get_output(self):
+    def get_output(self, ignore_noise=True):
         output = self.activations[:]
-        if self.add_noise:
-            output[0] = self.activations[0] + np.random.normal(0.0, 0.1)
-            output[1] = self.activations[1] + np.random.normal(0.0, 0.1)
+
+        if self.add_noise and not ignore_noise:
+            output[0] = self.activations[0] + np.random.normal(0.0, 0.05)
+            output[1] = self.activations[1] + np.random.normal(0.0, 0.05)
+
         return output
+    
+    def get_noisy_periods(self):
+        signal_1_one_period_noisy = np.array(self.signal_1_one_period[:]) + np.random.normal(0.0, 0.05, len(self.signal_1_one_period))
+        signal_2_one_period_noisy = np.array(self.signal_2_one_period[:]) + np.random.normal(0.0, 0.05, len(self.signal_1_one_period))
+        return signal_1_one_period_noisy, signal_2_one_period_noisy
 
     def get_one_period(self):
         self.signal_1_one_period = []
@@ -157,6 +164,7 @@ class CPG(nn.Module):
 # time = np.arange(0, len(c1), dtype=int)
 
 # cpg = CPG()
+# noisy_signal_1, noisy_signal_2 = cpg.get_noisy_periods() 
 # print(cpg.max_value)
 # print(cpg.min_value)
 # print(cpg.period)
@@ -164,8 +172,10 @@ class CPG(nn.Module):
 # # plt.scatter(time, c2)
 # # plt.plot(cpg.signal_1)
 # # plt.plot(cpg.signal_2)
-# plt.plot(cpg.signal_1_one_period)
-# plt.plot(cpg.signal_2_one_period)
+# # plt.plot(cpg.signal_1_one_period)
+# # plt.plot(cpg.signal_2_one_period)
+# plt.plot(noisy_signal_1)
+# plt.plot(noisy_signal_2)
 # plt.show()
 
 
