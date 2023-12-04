@@ -55,7 +55,7 @@ def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, ge
             model_path = os.path.join(os.getcwd(), "data", env_type, model_type, "fixed")
             if not os.path.exists(model_path):
                 os.makedirs(model_path)
-        
+
         elif alt_cpgs:
             model_path = os.path.join(os.getcwd(), "data", env_type, model_type, "alt_cpgs")
             if not os.path.exists(model_path):
@@ -79,19 +79,19 @@ def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, ge
         sys.exit()
 
 def rl_pibb_train(env_type: str, epochs: int, max_steps: int, rollout_size: int, norm_constant: float,
-                  variance: float, decay:float, alt_cpgs: bool, test_case: int):
+                  variance: float, decay:float, alt_cpgs: bool, add_noise: bool, test_case: int):
     """Train a model using RL-PIBB"""
 
     try:
         # Initialize RL-PIBB
-        rl_pibb = RlPibb(env_type, epochs, max_steps, rollout_size, norm_constant, variance, decay, alt_cpgs, test_case)
+        rl_pibb = RlPibb(env_type, epochs, max_steps, rollout_size, norm_constant, variance, decay, alt_cpgs, add_noise, test_case)
 
         # Run RL-PIBB
         print("Running RL-PIBB training...")
         rl_pibb.run(verbose=True)
 
         # Get path to save data
-        model_path = os.path.join(os.getcwd(), "data", "RL-PIBB")
+        model_path = os.path.join(os.getcwd(), "data", "RL-PIBB", f"set_{test_case}_noise{int(add_noise)}")
         if not os.path.exists(model_path):
             os.makedirs(model_path)
 
@@ -103,13 +103,13 @@ def rl_pibb_train(env_type: str, epochs: int, max_steps: int, rollout_size: int,
         rl_pibb.env.close()
 
         # Get plots
-        rl_pibb.get_plots(model_path, is_show=False)
+        # rl_pibb.get_plots(model_path, is_show=False)
 
     except KeyboardInterrupt:
         print("TRAINING INTERRUPTED !!")
 
         # Get path to save data
-        model_path = os.path.join(os.getcwd(), "data", "RL-PIBB")
+        model_path = os.path.join(os.getcwd(), "data", "RL-PIBB", f"set_{test_case}_noise{int(add_noise)}")
         if not os.path.exists(model_path):
             os.makedirs(model_path)
 
@@ -120,7 +120,7 @@ def rl_pibb_train(env_type: str, epochs: int, max_steps: int, rollout_size: int,
         rl_pibb.env.close()
 
         # Get plots
-        rl_pibb.get_plots(model_path, is_show=False)
+        # rl_pibb.get_plots(model_path, is_show=False)
 
         # Exit
         sys.exit()
@@ -162,8 +162,14 @@ if __name__ == "__main__":
     norm_constant = 10.0
     variance = 0.05
     decay = 0.995
+    test_case = 1
     alt_cpgs = False
-    test_case = 2
+    add_noise = False
+
+    # Read alt_cpgs from command line
+    if len(sys.argv) > 1:
+        alt_cpgs = bool(sys.argv[1])
+    print(f"Alt CPGs: {alt_cpgs}")
 
     # Run RL-PIBB
     rl_pibb_train(env_type, epochs, max_steps, rollout_size, norm_constant, variance, decay, alt_cpgs, test_case)

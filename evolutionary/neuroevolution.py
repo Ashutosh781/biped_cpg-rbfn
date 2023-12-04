@@ -45,10 +45,10 @@ class NeuroEvolution():
         #Set new path to load files from if fixed centers are selected
         if self.fixed_centres:
             self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", env_type, model_type, "fixed")
-        
+
         elif self.alt_cpgs:
             self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", env_type, model_type, "alt_cpgs")
-        
+
         elif self.add_noise:
             self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", env_type, model_type, "add_noise")
 

@@ -31,7 +31,7 @@ class RlPibb():
     """
 
     def __init__(self, env_type: str, epochs: int=1000, max_steps: int=1000, rollout_size: int=10,
-                 norm_constant: float=10.0, variance: float=1.0, decay:float=0.99, alt_cpgs: bool=False, test_case: int=1):
+                 norm_constant: float=10.0, variance: float=1.0, decay:float=0.99, alt_cpgs: bool=False, add_noise: bool=False, test_case: int=1):
         """Initialize parameters for RL-PIBB agent"""
 
         # Arguments
@@ -42,6 +42,9 @@ class RlPibb():
         self.norm_constant = norm_constant
         self.variance = variance
         self.decay = decay
+        self.alt_cpgs = alt_cpgs
+        self.add_noise = add_noise
+        self.test_case = test_case
 
         # Create environment
         self.env = gym.make(self.env_type)
@@ -55,8 +58,9 @@ class RlPibb():
 
         # Initialize model and agent
         # Centres of RBF are fixed calculated from formula
-        self.model = CPG_RBFN(self.rbfn_units, self.out_size, fixed_centers=True, alt_cpgs=alt_cpgs, test_case=test_case)
-        self.agent = Individual(self.model)
+        model = CPG_RBFN(self.rbfn_units, self.out_size, fixed_centers=True,
+                         alt_cpgs=self.alt_cpgs, test_case=self.test_case, add_noise=self.add_noise)
+        self.fixed_agent = Individual(model)
 
         # Reward history
         self.reward_history = []
@@ -75,13 +79,16 @@ class RlPibb():
         rollout_agents_noise = []
 
         for i in range(self.rollout_size):
-            agent = Individual(self.model)
+            # Create a new agent
+            model = CPG_RBFN(self.rbfn_units, self.out_size, fixed_centers=True,
+                             alt_cpgs=self.alt_cpgs, test_case=self.test_case, add_noise=self.add_noise)
+            agent = Individual(model)
             # Get noise in the parameters
-            agent_param_noise = np.random.normal(0, self.variance, self.agent.model.get_params().shape)
+            agent_param_noise = np.random.normal(0, self.variance, self.fixed_agent.model.get_params().shape)
             # Convert to tensor
             agent_param_noise_tensor = torch.from_numpy(agent_param_noise).float()
             # Add noise to parameters
-            agent_params = torch.add(self.agent.model.get_params(), agent_param_noise_tensor)
+            agent_params = torch.add(self.fixed_agent.model.get_params(), agent_param_noise_tensor)
             # Set the parameters of the agent
             agent.model.set_params(agent_params)
 
@@ -165,7 +172,7 @@ class RlPibb():
             weight_update = torch.from_numpy(weight_update).float()
 
             # Update the agent weights based rollout rewards using PIBB
-            self.agent.model.set_params(torch.add(self.agent.model.get_params(), weight_update))
+            self.fixed_agent.model.set_params(torch.add(self.fixed_agent.model.get_params(), weight_update))
 
             # Decay the variance
             self.variance *= self.decay
@@ -196,7 +203,7 @@ class RlPibb():
             writer.writerow(self.weight_update_history)
 
         # Save the model
-        torch.save(self.agent.model.state_dict(), os.path.join(path, "model.pt"))
+        torch.save(self.fixed_agent.model.state_dict(), os.path.join(path, "model.pt"))
 
     def get_plots(self, path: str, is_show: bool=False):
         """Plot the reward history statistics and save the plots"""
