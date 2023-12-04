@@ -56,7 +56,7 @@ class CPG_RBFN(nn.Module):
     # for i in range(self.rbf_kernels):
     #   centers_1.append(self.cpg.signal_1_one_period[int(centers[i])])
     #   centers_2.append(self.cpg.signal_2_one_period[int(centers[i])])
-    
+
     # print(f"Centers 1: {centers_1}")
     # print(f"Centers 2: {centers_2}")
 

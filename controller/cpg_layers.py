@@ -52,7 +52,7 @@ class CPG(nn.Module):
                 self.min_value = -0.647611
 
         self.weights = np.array([[self.alpha * np.cos(self.phi), self.alpha * np.sin(self.phi)],[-self.alpha * np.sin(self.phi), self.alpha * np.cos(self.phi)]])
-        
+
         self.tau = 400
         self.reset()
 
@@ -104,20 +104,20 @@ class CPG(nn.Module):
 
         for _ in range(self.tau):
             cpg_output = self.get_output()
-            
+
             #Once we find a max value start capturing period
             if np.isclose(cpg_output[0], self.max_value, 0.001):
                 add_to_signal = True
-            
+
             #Capture period until we have captured period size samples
             if add_to_signal and len(self.signal_1_one_period) <= self.period:
                 self.signal_1_one_period.append(cpg_output[0])
                 self.signal_2_one_period.append(cpg_output[1])
-            
+
             #Finish when we have captured one period
             if(len(self.signal_1_one_period) == self.period+1):
                 break
-            
+
             self.step()
 
     def reset(self):
