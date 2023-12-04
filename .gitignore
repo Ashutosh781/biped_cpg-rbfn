@@ -162,6 +162,5 @@ cython_debug/
 
 #Models
 *.pth
-*.pt
 *.txt
 /data
