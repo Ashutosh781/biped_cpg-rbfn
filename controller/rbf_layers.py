@@ -20,7 +20,7 @@ class RBF(nn.Module):
 
         self.beta = 0.04
 
-        self.tau = 300
+        self.tau = 400
         self.delayline = [Delayline(self.tau), Delayline(self.tau)]
         self.cpg_period = cpg_period
 

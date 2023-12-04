@@ -22,7 +22,7 @@ class NeuroEvolution():
     """Class for all the Neuro Evolutionary functions"""
 
     def __init__(self, model_type: str, env_type: str, fixed_centres: bool=False, generations: int=100, max_steps: int=1000,
-                 gen_size: int=10, elite_size: int=10, load_elite: bool=False, alt_cpgs: bool=False, mean: float=1.0, std: float=0.001):
+                 gen_size: int=10, elite_size: int=10, load_elite: bool=False, alt_cpgs: bool=False, add_noise: bool=False, mean: float=1.0, std: float=0.001):
         """Initialize the Neuro Evolutionary parameters"""
 
         # Arguments
@@ -30,6 +30,7 @@ class NeuroEvolution():
         self.env_type = env_type
         self.fixed_centres = fixed_centres
         self.alt_cpgs = alt_cpgs
+        self.add_noise = add_noise
         self.generations = generations
         self.max_steps = max_steps
         self.gen_size = gen_size
@@ -39,14 +40,17 @@ class NeuroEvolution():
         self.std = std
 
         # Path for saving/loading elite
-        self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", model_type, "not fixed")
+        self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", env_type, model_type, "not_fixed")
 
         #Set new path to load files from if fixed centers are selected
         if self.fixed_centres:
-            self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", model_type, "fixed")
+            self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", env_type, model_type, "fixed")
         
-        if self.alt_cpgs:
-            self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", model_type, "alt_cpgs")
+        elif self.alt_cpgs:
+            self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", env_type, model_type, "alt_cpgs")
+        
+        elif self.add_noise:
+            self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", env_type, model_type, "add_noise")
 
         # Create the environment
         self.env = gym.make(self.env_type)
@@ -79,7 +83,7 @@ class NeuroEvolution():
         model = None
         match self.model_type:
             case self.models.CPG_RBFN_MODEL:
-                model = CPG_RBFN(self.rbfn_units, self.out_size, self.fixed_centres, self.alt_cpgs)
+                model = CPG_RBFN(rbf_size=self.rbfn_units, out_size=self.out_size, fixed_centers=self.fixed_centres, alt_cpgs=self.alt_cpgs, add_noise=self.add_noise)
             case self.models.RBFN_FC_MODEL:
                 model = RBFN_FC(self.in_size, self.rbfn_units, self.out_size)
             case self.models.CPG_FC_MODEL:
@@ -189,7 +193,7 @@ class NeuroEvolution():
                 parent = self.generation[roulette_wheel_selection(fitness_of_generation)]
 
                 #Mutation
-                mutate_percent = 0.2
+                mutate_percent = 0.1
                 mutations = int(parent.model.dim * mutate_percent)
 
                 child = Individual(self.get_model())

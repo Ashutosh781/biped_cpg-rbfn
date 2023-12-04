@@ -12,8 +12,10 @@ from utils.ann_lib import postProcessing
 class CPG(nn.Module):
     """Central Pattern Generator network for controlling the robot"""
 
-    def __init__(self, test_num: int=1):
+    def __init__(self, test_num: int=1, add_noise: bool=True):
         super(CPG, self).__init__()
+
+        self.add_noise = add_noise
 
         #Parameters in paper
         # self.alpha = 1.01
@@ -25,36 +27,50 @@ class CPG(nn.Module):
                 self.alpha = 1.1
                 self.phi = 0.06*np.pi
                 self.period = 34
+                self.max_value = 0.6477035
+                self.min_value = -0.647611
+
+                # self.alpha = 1.01
+                # self.phi = 0.01*np.pi
+                # self.period = 201
+                # self.max_value = 0.200348
+                # self.min_value = -0.200356
+
             case 2:
                 #Test 2
                 self.alpha = 1.1
                 self.phi = 0.08*np.pi
                 self.period = 25
+                self.max_value = 0.6477035
+                self.min_value = -0.647611
             case 3:
                 # Test 3
                 self.alpha = 1.1
                 self.phi = 0.1*np.pi
                 self.period = 20
+                self.max_value = 0.6477035
+                self.min_value = -0.647611
 
         self.weights = np.array([[self.alpha * np.cos(self.phi), self.alpha * np.sin(self.phi)],[-self.alpha * np.sin(self.phi), self.alpha * np.cos(self.phi)]])
-        self.tau = 300
+        
+        self.tau = 400
         self.reset()
 
         #Store signal values to calculate centers
-        self.signal_1 = []
-        self.signal_2 = []
+        # self.signal_1 = []
+        # self.signal_2 = []
 
-        for _ in range(self.tau):
-            cpg_output = self.get_output()
-            self.signal_1.append(cpg_output[0])
-            self.signal_2.append(cpg_output[1])
-            self.step()
+        # for _ in range(self.tau):
+        #     cpg_output = self.get_output()
+        #     self.signal_1.append(cpg_output[0])
+        #     self.signal_2.append(cpg_output[1])
+        #     self.step()
 
-        self.signal_1 = np.array(self.signal_1)
-        self.signal_2 = np.array(self.signal_2)
+        # self.signal_1 = np.array(self.signal_1)
+        # self.signal_2 = np.array(self.signal_2)
 
-        self.max_value = self.signal_1.max()
-        self.min_value = self.signal_1.min()
+        # self.max_value = self.signal_1.max()
+        # self.min_value = self.signal_1.min()
 
         self.get_one_period()
 
@@ -68,7 +84,11 @@ class CPG(nn.Module):
         self.activations[1] = next_a2
 
     def get_output(self):
-        return self.activations
+        output = self.activations[:]
+        if self.add_noise:
+            output[0] = self.activations[0] + np.random.normal(0.0, 0.1)
+            output[1] = self.activations[1] + np.random.normal(0.0, 0.1)
+        return output
 
     def get_one_period(self):
         self.signal_1_one_period = []
@@ -140,8 +160,8 @@ class CPG(nn.Module):
 # print(cpg.max_value)
 # print(cpg.min_value)
 # print(cpg.period)
-# plt.scatter(time, c1)
-# plt.scatter(time, c2)
+# # plt.scatter(time, c1)
+# # plt.scatter(time, c2)
 # # plt.plot(cpg.signal_1)
 # # plt.plot(cpg.signal_2)
 # plt.plot(cpg.signal_1_one_period)

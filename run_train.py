@@ -11,7 +11,7 @@ from rl.rlpibb import RlPibb
 
 
 def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, generations: int, max_steps: int, gen_size: int,
-                          elite_size: int, load_elite: bool=False, alt_cpgs: bool=False, mean: float=1.0, std: float=0.001):
+                          elite_size: int, load_elite: bool=False, alt_cpgs: bool=False, add_noise: bool=False, mean: float=1.0, std: float=0.001):
     """Train a model using neuroevolution"""
 
     try:
@@ -21,7 +21,7 @@ def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, ge
 
         # Initialize neuroevolution
         neuro_evolution = NeuroEvolution(model_type=model_type, env_type=env_type, fixed_centres=fixed_centres, generations=generations, max_steps=max_steps,
-                                         gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=load_elite, alt_cpgs=alt_cpgs)
+                                         gen_size=gen_size, mean=mean, std=std, elite_size=elite_size, load_elite=load_elite, alt_cpgs=alt_cpgs, add_noise=add_noise)
 
         # Run neuroevolution
         print("Running Neuro evolution training...")
@@ -46,18 +46,23 @@ def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, ge
         print("TRAINING INTERRUPTED !!")
 
         # Get path to save data
-        model_path = os.path.join(os.getcwd(), "data", model_type, "not fixed")
+        model_path = os.path.join(os.getcwd(), "data", env_type, model_type, "not fixed")
         if not os.path.exists(model_path):
             os.makedirs(model_path)
 
         #Set new path to save files if fixed centers are selected
         if fixed_centres:
-            model_path = os.path.join(os.getcwd(), "data", model_type, "fixed")
+            model_path = os.path.join(os.getcwd(), "data", env_type, model_type, "fixed")
             if not os.path.exists(model_path):
                 os.makedirs(model_path)
         
-        if alt_cpgs:
-            model_path = os.path.join(os.getcwd(), "data", model_type, "alt_cpgs")
+        elif alt_cpgs:
+            model_path = os.path.join(os.getcwd(), "data", env_type, model_type, "alt_cpgs")
+            if not os.path.exists(model_path):
+                os.makedirs(model_path)
+
+        elif add_noise:
+            model_path = os.path.join(os.getcwd(), "data", env_type, model_type, "add_noise")
             if not os.path.exists(model_path):
                 os.makedirs(model_path)
 
@@ -124,7 +129,8 @@ def rl_pibb_train(env_type: str, epochs: int, max_steps: int, rollout_size: int,
 if __name__ == "__main__":
 
     #Gym environment
-    env_type = "HalfCheetah-v4"
+    # env_type = "HalfCheetah-v4"
+    env_type = "Walker2d-v4"
 
     ## MODEL TYPE
     models = Models()
@@ -134,19 +140,20 @@ if __name__ == "__main__":
     model_type = models.CPG_RBFN_MODEL
 
     # NEUROEVOLUTION PARAMS
-    fixed_centres = True
-    load_elite = False
+    fixed_centres = False
+    load_elite = True
     alt_cpgs = False
-    generations = 1000
+    add_noise = False
+    generations = 10000
     max_steps = 1000
-    gen_size = 10
+    gen_size = 20
     elite_size = 10
     mean = 0.0
-    std = 0.02
+    std = 0.01
 
     # Run neuroevolution
     neuro_evolution_train(model_type=model_type, env_type=env_type, fixed_centres=fixed_centres, generations=generations, max_steps=max_steps,
-                          gen_size=gen_size, mean=mean, alt_cpgs=alt_cpgs, std=std, elite_size=elite_size, load_elite=load_elite)
+                          gen_size=gen_size, mean=mean, alt_cpgs=alt_cpgs, std=std, elite_size=elite_size, load_elite=load_elite, add_noise=add_noise)
 
     # RL-PIBB PARAMS
     epochs = 500
