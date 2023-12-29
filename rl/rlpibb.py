@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 # Import custom modules
-from evolutionary.individual import Individual
+from utils.individual import Individual
 from controller.cpg_rbfn import CPG_RBFN
 
 

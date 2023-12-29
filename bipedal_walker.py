@@ -14,7 +14,7 @@ from controller.fc import FC
 from controller.rbfn_fc import RBFN_FC
 from controller.cpg_rbfn import CPG_RBFN
 from controller.cpg_fc import CPG_FC
-from evolutionary.individual import Individual
+from utils.individual import Individual
 from evolutionary.functions import mutate, norm_fitness_of_generation, roulette_wheel_selection, select_solutions_from_gen, resetFitness
 
 

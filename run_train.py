@@ -5,7 +5,7 @@ import numpy as np
 # Add project root to the python path
 sys.path.append(os.path.dirname(__file__))
 
-from evolutionary.individual import Models
+from utils.individual import Models
 from evolutionary.neuroevolution import NeuroEvolution
 from rl.rlpibb import RlPibb
 
@@ -55,7 +55,7 @@ def neuro_evolution_train(model_type:str, env_type: str, fixed_centres: bool, ge
             model_path = os.path.join(os.getcwd(), "data", env_type, model_type, "fixed")
             if not os.path.exists(model_path):
                 os.makedirs(model_path)
-        
+
         elif alt_cpgs and add_noise:
             model_path = os.path.join(os.getcwd(), "data", env_type, model_type, "noisy_alt_cpgs")
             if not os.path.exists(model_path):

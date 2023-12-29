@@ -11,7 +11,7 @@ import gymnasium as gym
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 # Import project modules
-from evolutionary.individual import Individual, Models
+from utils.individual import Individual, Models
 from evolutionary.functions import norm_fitness_of_generation, roulette_wheel_selection
 from controller.fc import FC
 from controller.cpg_fc import CPG_FC
@@ -45,7 +45,7 @@ class NeuroEvolution():
         #Set new path to load files from if fixed centers are selected
         if self.fixed_centres:
             self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", env_type, model_type, "fixed")
-        
+
         elif self.alt_cpgs and self.add_noise:
             self.elite_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", env_type, model_type, "noisy_alt_cpgs")
 

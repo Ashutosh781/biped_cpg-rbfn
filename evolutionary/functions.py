@@ -8,7 +8,7 @@ from torch import tensor
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 # Import proect modules
-from evolutionary.individual import Individual
+from utils.individual import Individual
 
 #Normalize the fitness of a generation
 def norm_fitness_of_generation(generation: list[Individual]):
