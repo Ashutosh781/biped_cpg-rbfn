@@ -22,6 +22,8 @@ import utils.ann_lib as ann
 
 Change the path insert if creating a file in a sub-folder within a sub-folder of the project.
 
+We also have the Individual and Model class to ease the reference of a single individual and a model.
+
 ## Classes binded
 
 - Neuron
