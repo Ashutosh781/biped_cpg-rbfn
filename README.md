@@ -10,13 +10,15 @@ To train the model run the following command:
 python3 run_train.py
 ```
 
+Our paper can be found [here](./media/paper.pdf).
+
+Videos from our experiments can be found in the [media](./media) folder.
+
 The network overview is as follows:
 
-![Network Overview](./results/figures/network.png)
+![Network Overview](./media/network.png)
 
 In this network using our method, Neuroevolution Learning we learn the $C_{ij}$ RBF centers and $w_{jk}$ output weights.
-
-Our paper can be found [here](./results/paper.pdf).
 
 Project by:
 
