@@ -12,7 +12,7 @@ python3 run_train.py
 
 Our paper can be found [here](./media/paper.pdf).
 
-Videos from our experiments can be found in the [media](./media) folder.
+Videos from our experiments can be found in this Google drive [folder](https://drive.google.com/drive/folders/1XkruLDGdvUqeXTAUOn0_rwLFGQ2sfx9v?usp=sharing).
 
 The network overview is as follows:
 
