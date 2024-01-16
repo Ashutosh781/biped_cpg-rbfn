@@ -22,7 +22,7 @@ from controller.cpg_rbfn import CPG_RBFN
 class NeuroEvolution():
     """Class for all the Neuro Evolutionary functions"""
 
-    def __init__(self, model_type: str, env_type: str, generations: int=500, max_steps: int=1000,
+    def __init__(self, model_type: str, env_type: str, generations: int=100, max_steps: int=1000,
                  gen_size: int=10, mean: float=1.0, std: float=0.001):
         """Initialize the Neuro Evolutionary parameters"""
 

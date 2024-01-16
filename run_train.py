@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from evolutionary.individual import Models
 from evolutionary.neuroevolution import NeuroEvolution
-from rl.rl import RlPibb
+# from rl.rl import RlPibb
 
 
 def neuro_evolution(model_type:str, env_type: str, generations: int, max_steps: int, gen_size: int, mean: float=1.0, std: float=0.001):
@@ -34,7 +34,7 @@ def neuro_evolution(model_type:str, env_type: str, generations: int, max_steps: 
             os.makedirs(model_path)
 
         # Save data
-        neuro_evolution.save_data(model_path)
+        neuro_evolution.save(model_path)
 
         # Close environment
         neuro_evolution.env.close()
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     # model_type = models.RL_PIBB
 
     # NEUROEVOLUTION PARAMS
-    generations = 500
+    generations = 100
     max_steps = 1000
     gen_size = 10
     mean = 1.0
