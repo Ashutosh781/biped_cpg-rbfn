@@ -8,7 +8,7 @@ from torch import tensor
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 # Import proect modules
-from evolutionary.individual import Individual
+from utils.individual import Individual
 
 #Normalize the fitness of a generation
 def norm_fitness_of_generation(generation: list[Individual]):
@@ -54,5 +54,5 @@ def resetFitness(generation: list[Individual]):
 #Mutation operator
 def mutate(params: tensor, mutations: int = 1):
     for _ in range(mutations):
-        params[rand.randrange(len(params))] += np.random.normal(1, 0.01)
+        params[rand.randrange(len(params))] += np.random.normal(0.0, 0.01)
     return params

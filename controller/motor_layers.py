@@ -14,6 +14,9 @@ class MotorLayer(nn.Module):
 
         nn.init.normal_(self.weight, -1, 1)
 
+    def reset(self):
+        nn.init.normal_(self.weight, -1, 1)
+
     def forward(self, input):
 
         output = np.zeros(self.out_features)

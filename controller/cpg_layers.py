@@ -12,50 +12,67 @@ from utils.ann_lib import postProcessing
 class CPG(nn.Module):
     """Central Pattern Generator network for controlling the robot"""
 
-    def __init__(self):
+    def __init__(self, test_num: int=1, add_noise: bool=True):
         super(CPG, self).__init__()
+
+        self.add_noise = add_noise
+
+        #Parameters in paper
         # self.alpha = 1.01
         # self.phi = 0.01*np.pi
-        #Test 1
-        self.alpha = 1.1
-        self.phi = 0.06*np.pi
-        #Test 2
-        # self.alpha = 1.25
-        # self.phi = 0.1*np.pi
-        #Test 3
-        # self.alpha = 1.5
-        # self.phi = 0.2*np.pi
+
+        match(test_num):
+            case 1:
+                #Test 1
+                self.alpha = 1.1
+                self.phi = 0.06*np.pi
+                self.period = 34
+                self.max_value = 0.6477035
+                self.min_value = -0.647611
+
+                # self.alpha = 1.01
+                # self.phi = 0.01*np.pi
+                # self.period = 201
+                # self.max_value = 0.200348
+                # self.min_value = -0.200356
+
+            case 2:
+                #Test 2
+                self.alpha = 1.1
+                self.phi = 0.08*np.pi
+                self.period = 25
+                self.max_value = 0.6477035
+                self.min_value = -0.647611
+            case 3:
+                # Test 3
+                self.alpha = 1.1
+                self.phi = 0.1*np.pi
+                self.period = 20
+                self.max_value = 0.6477035
+                self.min_value = -0.647611
 
         self.weights = np.array([[self.alpha * np.cos(self.phi), self.alpha * np.sin(self.phi)],[-self.alpha * np.sin(self.phi), self.alpha * np.cos(self.phi)]])
-        self.activations = np.array((0.2, 0))
 
-        #Initialize CPG
-        tau = 500
-        cpg_period_postprocessor = postProcessing()
-        randNum = np.random.randint(0,high=tau) % tau + 1
-
-        for _ in range(tau+randNum):
-            cpg_output = self.get_output()
-            cpg_period_postprocessor.calculateAmplitude(cpg_output[0], cpg_output[1])
-            self.period = cpg_period_postprocessor.getPeriod()
-            self.step()
+        self.tau = 400
+        self.reset()
 
         #Store signal values to calculate centers
-        self.signal_1 = []
-        self.signal_2 = []
-        self.max_value = 0
-        self.min_value = 0
-        
-        for _ in range(int(self.period)):
-            cpg_output = self.get_output()
-            self.signal_1.append(cpg_output[0])
-            self.signal_2.append(cpg_output[1])
-            self.step()
+        # self.signal_1 = []
+        # self.signal_2 = []
 
-        self.signal_1 = np.array(self.signal_1)
-        self.signal_2 = np.array(self.signal_2)
-        self.max_value = self.signal_1.max()
-        self.min_value = self.signal_1.min()
+        # for _ in range(self.tau):
+        #     cpg_output = self.get_output()
+        #     self.signal_1.append(cpg_output[0])
+        #     self.signal_2.append(cpg_output[1])
+        #     self.step()
+
+        # self.signal_1 = np.array(self.signal_1)
+        # self.signal_2 = np.array(self.signal_2)
+
+        # self.max_value = self.signal_1.max()
+        # self.min_value = self.signal_1.min()
+
+        self.get_one_period()
 
     def update_weights(self):
         self.weights = np.array([[self.alpha * np.cos(self.phi), self.alpha * np.sin(self.phi)],[-self.alpha * np.sin(self.phi), self.alpha * np.cos(self.phi)]])
@@ -66,11 +83,101 @@ class CPG(nn.Module):
         self.activations[0] = next_a1
         self.activations[1] = next_a2
 
-    def get_output(self):
-        return 5*self.activations
+    def get_output(self, ignore_noise=True):
+        output = self.activations[:]
+
+        if self.add_noise and not ignore_noise:
+            output[0] = self.activations[0] + np.random.normal(0.0, 0.05)
+            output[1] = self.activations[1] + np.random.normal(0.0, 0.05)
+
+        return output
+
+    def get_noisy_periods(self):
+        signal_1_one_period_noisy = np.array(self.signal_1_one_period[:]) + np.random.normal(0.0, 0.05, len(self.signal_1_one_period))
+        signal_2_one_period_noisy = np.array(self.signal_2_one_period[:]) + np.random.normal(0.0, 0.05, len(self.signal_1_one_period))
+        return signal_1_one_period_noisy, signal_2_one_period_noisy
+
+    def get_one_period(self):
+        self.signal_1_one_period = []
+        self.signal_2_one_period = []
+        add_to_signal = False
+
+        for _ in range(self.tau):
+            cpg_output = self.get_output()
+
+            #Once we find a max value start capturing period
+            if np.isclose(cpg_output[0], self.max_value, 0.001):
+                add_to_signal = True
+
+            #Capture period until we have captured period size samples
+            if add_to_signal and len(self.signal_1_one_period) <= self.period:
+                self.signal_1_one_period.append(cpg_output[0])
+                self.signal_2_one_period.append(cpg_output[1])
+
+            #Finish when we have captured one period
+            if(len(self.signal_1_one_period) == self.period+1):
+                break
+
+            self.step()
 
     def reset(self):
-        self.activations = np.array((0.2012, 0))
+        #Set activations
+        self.activations = np.array((0.2, 0))
+
+        #Initialize CPG
+        # cpg_period_postprocessor = postProcessing()
+        randNum = np.random.randint(0,high=self.tau) % self.tau + 1
+
+        for _ in range(self.tau+randNum):
+            # cpg_output = self.get_output()
+            # cpg_period_postprocessor.calculateAmplitude(cpg_output[0], cpg_output[1])
+            # self.period = cpg_period_postprocessor.getPeriod()
+            self.step()
+
+# x=[[ 0.6332, -0.0246],
+#         [ 0.6003, -0.1421],
+#         [ 0.4889, -0.3814],
+#         [ 0.4148, -0.4867],
+#         [ 0.2392, -0.6218],
+#         [ 0.0329, -0.6429],
+#         [-0.0813, -0.6193],
+#         [-0.3219, -0.5224],
+#         [-0.5303, -0.3750],
+#         [-0.5985, -0.2871],
+#         [-0.6470, -0.0885],
+#         [-0.6337,  0.0221],
+#         [-0.5527,  0.2605],
+#         [-0.4166,  0.4846],
+#         [-0.3331,  0.5673],
+#         [-0.1421,  0.6450],
+#         [ 0.0787,  0.6200],
+#         [ 0.1985,  0.5793],
+#         [ 0.4328,  0.4557],
+#         [ 0.5974,  0.2892]]
+
+# c1 = [i[0] for i in x]
+# c2 = [i[1] for i in x]
+# time = np.arange(0, len(c1), dtype=int)
+
+# c1 =  [0.6362034868378307, 0.6056403566026877, 0.4979740682026714, 0.34278407182568793, 0.2518986861411785, 0.047582298836436485, -0.18497567644460014, -0.4208777666940527, -0.5189773961920616, -0.6333793133810519, -0.6366744959633248, -0.5599629721546054, -0.4994623530128837, -0.34471522862146653, -0.15574149978948404, 0.06309760181748794, 0.18228092859889855, 0.4184656839308781, 0.5898769526814864, 0.6470831148579375]
+# c2 = [-0.009429322716789812, -0.126091052986264, -0.366151504623559, -0.5595098201634598, -0.6164959592472207, -0.6444954068298554, -0.5845964621957886, -0.4638175755027142, -0.3861018362300865, -0.2047054462852167, 0.006908954005284393, 0.24434699815917255, 0.36358723244028845, 0.5579006565210938, 0.6434105936053639, 0.6241561574364519, 0.585633816717373, 0.4654296411586814, 0.3013419928663006, 0.10499597417593949]
+# time = np.arange(0, len(c1), dtype=int)
+
+# cpg = CPG()
+# noisy_signal_1, noisy_signal_2 = cpg.get_noisy_periods()
+# print(cpg.max_value)
+# print(cpg.min_value)
+# print(cpg.period)
+# # plt.scatter(time, c1)
+# # plt.scatter(time, c2)
+# # plt.plot(cpg.signal_1)
+# # plt.plot(cpg.signal_2)
+# # plt.plot(cpg.signal_1_one_period)
+# # plt.plot(cpg.signal_2_one_period)
+# plt.plot(noisy_signal_1)
+# plt.plot(noisy_signal_2)
+# plt.show()
+
 
 # x=[[ 0.6409,  0.3562],
 #     [-0.6456, -0.6456],

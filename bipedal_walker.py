@@ -1,20 +1,20 @@
 import os
 import sys
 import types
-import gym
+import gymnasium as gym
 import numpy as np
 from torch import save, load, float32, tensor
 import matplotlib.pyplot as plt
 from pathlib import Path
 
 # Add project root to the python path
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+sys.path.append(os.path.dirname(__file__))
 
 from controller.fc import FC
 from controller.rbfn_fc import RBFN_FC
 from controller.cpg_rbfn import CPG_RBFN
 from controller.cpg_fc import CPG_FC
-from evolutionary.individual import Individual
+from utils.individual import Individual
 from evolutionary.functions import mutate, norm_fitness_of_generation, roulette_wheel_selection, select_solutions_from_gen, resetFitness
 
 
@@ -38,7 +38,7 @@ MODEL_TYPE = models.CPG_RBFN_MODEL
 #MODEL_TYPE = models.RBFN_FC_MODEL
 
 #Folder to save models
-MODELS_PATH = f"{CWD}/sim/models/{MODEL_TYPE}"
+MODELS_PATH = f"{CWD}/models/{MODEL_TYPE}"
 
 #CPG-RBFN Parameters
 RBFN_UNITS = 10
@@ -52,7 +52,7 @@ OUTPUT_UNITS = ENV.action_space.shape[0]
 
 ### NEUROEVOLUTION PARAMS ###
 REWARDS_GOAL = 1000
-GENERATIONS = 100
+GENERATIONS = 1000
 GEN_SIZE = 10
 ELITE_SIZE = GEN_SIZE
 
@@ -85,6 +85,11 @@ def run_gen(generation, rewards_goal):
 
             if terminated or truncated:
                 break
+
+        #Reset CPG
+        if MODEL_TYPE == models.CPG_RBFN_MODEL or MODEL_TYPE == models.CPG_FC_MODEL:
+            individual.model.cpg.reset()
+
 
 #Train through neuro evolution
 def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, elite_size: int, elite: list[Individual]=[]):
@@ -133,7 +138,7 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, elite_si
                 parent = generation[roulette_wheel_selection(fitness_of_generation)]
 
                 #Mutation
-                mutate_percent = 0.1
+                mutate_percent = 0.2
                 mutations = int(parent.model.dim * mutate_percent)
 
                 model = None
@@ -170,9 +175,9 @@ def neuro_evolution(gen_size: int, generations: int, rewards_goal: int, elite_si
 
             #Reset generation's fitness
             resetFitness(generation)
-            if MODEL_TYPE == models.CPG_RBFN_MODEL or MODEL_TYPE == models.CPG_FC_MODEL:
-                for i in generation:
-                    i.model.cpg.reset()
+            # if MODEL_TYPE == models.CPG_RBFN_MODEL or MODEL_TYPE == models.CPG_FC_MODEL:
+            #     for i in generation:
+            #         i.model.cpg.reset()
 
     except KeyboardInterrupt:
         for i in range(len(elite)):
@@ -233,15 +238,15 @@ match(MODEL_TYPE):
 
 ### CONTINUE NEUROEVOLUTION RUN ###
 
-# elite = []
-# for i in range(ELITE_SIZE):
-#     model.load_state_dict(load(f"{MODELS_PATH}/model{i}.pt"))
-#     best_indv = Individual(model)
-#     best_indv.model = model
-#     elite.append(best_indv)
-# best_indv, new_elite, best_per_gen = neuro_evolution(gen_size=GEN_SIZE, generations=GENERATIONS, rewards_goal=REWARDS_GOAL, elite_size=ELITE_SIZE, elite=elite)
-# for i in range(len(new_elite)):
-#     save(new_elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pt")
+elite = []
+for i in range(ELITE_SIZE):
+    model.load_state_dict(load(f"{MODELS_PATH}/model{i}.pt"))
+    best_indv = Individual(model)
+    best_indv.model = model
+    elite.append(best_indv)
+best_indv, new_elite, best_per_gen = neuro_evolution(gen_size=GEN_SIZE, generations=GENERATIONS, rewards_goal=REWARDS_GOAL, elite_size=ELITE_SIZE, elite=elite)
+for i in range(len(new_elite)):
+    save(new_elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pt")
 
 ## LOAD BEST SAVED MODEL ###
 
@@ -252,8 +257,7 @@ match(MODEL_TYPE):
 # test_algorithm(best_nn=best_indv)
 
 ### FIRST NEUROEVOLUTION RUN ###
-
-best_indv, elite, best_per_gen = neuro_evolution(gen_size=GEN_SIZE, generations=GENERATIONS, rewards_goal=REWARDS_GOAL, elite_size=ELITE_SIZE)
-for i in range(len(elite)):
-            save(elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pt")
-print(best_per_gen)
+# best_indv, elite, best_per_gen = neuro_evolution(gen_size=GEN_SIZE, generations=GENERATIONS, rewards_goal=REWARDS_GOAL, elite_size=ELITE_SIZE)
+# for i in range(len(elite)):
+#             save(elite[i].model.state_dict(), f"{MODELS_PATH}/model{i}.pt")
+# print(best_per_gen)

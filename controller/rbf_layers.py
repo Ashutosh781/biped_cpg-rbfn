@@ -20,11 +20,14 @@ class RBF(nn.Module):
 
         self.beta = 0.04
 
-        self.tau = 300
+        self.tau = 400
         self.delayline = [Delayline(self.tau), Delayline(self.tau)]
         self.cpg_period = cpg_period
 
         # Initialize parameters
+        nn.init.normal_(self.centres, -1, 1)
+
+    def reset(self):
         nn.init.normal_(self.centres, -1, 1)
 
     def forward(self, input):
@@ -63,9 +66,9 @@ class SimpleRBF(nn.Module):
             The values are initialised from a standard normal distribution.
             Normalising inputs to have mean 0 and standard deviation 1 is
             recommended.
-        
+
         log_sigmas: logarithm of the learnable scaling factors of shape (out_features).
-        
+
         basis_func: the radial basis function used to transform the scaled
             distances.
     """
